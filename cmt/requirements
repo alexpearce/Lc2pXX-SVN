@@ -1,0 +1,15 @@
+# Meta
+package Lc2pXX
+version v0r0
+author Alex Pearce <alex.pearce@cern.ch>
+
+# Folders to process
+branches doc python
+
+# Dependencies
+use GaudiPolicy v*
+use ROOT v* LCG_Interfaces
+
+# Make the Python module available
+apply_pattern install_python_modules
+

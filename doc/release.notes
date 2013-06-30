@@ -1,0 +1,9 @@
+# Package: Lc2pXX
+# Author: Alex Pearce <alex.pearce@cern.ch>
+# Description: Analysis code for the dACP Lc2pXX analysis.
+# URL: https://twiki.cern.ch/twiki/bin/viewauth/LHCbPhysics/LcTophhDACP
+
+v0r0
+====
+  * Creation of the Lc2pXX package.
+
