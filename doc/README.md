@@ -42,6 +42,7 @@ Contributing
 If you are contributing to the Lc2pXX package, the style guide is approximate to the [PEP8 guide](http://www.python.org/dev/peps/pep-0008/).
 The most important points are:
 
+* Lines of code are a maximum of 80 characters long, and should not have any trailing whitespace;
 * Variables, functions, and modules are `lower_case`, but classes are `CamelCase`;
 * Indentation is four spaces;
 * Two blank lines between function and class definitions (except inside class definitions where it is one blank line), and one blank line terminating every script;
