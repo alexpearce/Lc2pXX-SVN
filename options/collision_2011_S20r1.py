@@ -42,6 +42,17 @@ filter_template = FilterDesktop(
 )
 
 inputs_template = "Phys/{0}/Particles"
+decay_template = "[Lambda_b0 -> (^Lambda_c+ -> ^p+ ^{0} ^{1}) ^{2}]cc"
+mother_templates = {
+    "Lambdab": "[Lambda_b0]cc: [Lambda_b0 -> (Lambda_c+ -> p+ {0} {1}) {2}]cc",
+    "Lambdac": "[Lambda_b0 -> (^Lambda_c+ -> p+ {0} {1}) {2}]cc",
+}
+daughter_templates = {
+    "mu": "[Lambda_b0 -> (Lambda_c+ -> p+ {0} {1}) ^{2}]cc",
+    "h1": "[Lambda_b0 -> (Lambda_c+ -> p+ ^{0} {1}) {2}]cc",
+    "h2": "[Lambda_b0 -> (Lambda_c+ -> p+ {0} ^{1}) {2}]cc",
+    "proton": "[Lambda_b0 -> (Lambda_c+ -> ^p+ {0} {1}) {2}]cc"
+}
 
 for line in lines:
     stripping = lines[line]["stripping"]
@@ -51,13 +62,23 @@ for line in lines:
     filter = filter_template.clone(filter_name)
     filter.Inputs = [inputs_template.format(stripping)]
 
+    # Fill the branch templates with the appropriate particles
+    mothers = {}
+    daughters = {}
+    for mother in mother_templates:
+        mothers[mother] = mother_templates[mother].format(*tracks)
+    for daughter in daughter_templates:
+        daughters[daughter] = daughter_templates[daughter].format(*tracks)
+
     # Create a tuple for the mode
-    tuple = tuple_templates.decay_tree_tuple("Tuple{0}".format(line))
-    # The star unpacks the tuple, neat!
-    tuple.Decay = tuple.Decay.format(*tracks)
-    tuple.Inputs = [inputs_template.format(filter_name)]
-    for b in tuple.Branches:
-        tuple.Branches[b] = tuple.Branches[b].format(*tracks)
+    tuple = tuple_templates.decay_tree_tuple(
+        "Tuple{0}".format(line),
+        decay_template.format(*tracks),
+        mothers,
+        daughters,
+        # The input to the tuple is the output of the filter
+        inputs_template.format(filter_name)
+    )
 
     # Sequence to hold a succession of algorithms
     sequence = GaudiSequencer("SequenceBook{0}".format(line))

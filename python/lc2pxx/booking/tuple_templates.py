@@ -1,38 +1,44 @@
 from Configurables import DecayTreeTuple
 from DecayTreeTuple.Configuration import *
 
-def add_tistos(branch, triggers):
-    """Adds the TISTOS tuple tool to the branch.
-
-    Usage:
-        tuple = DecayTreeTuple("MyTuple")
-        tuple.Decay = "J/psi(1S) -> ^mu- ^mu+"
-        tuple.addBranches({"mum": ..., "mup": ...})
-        add_tistos(tupleTool.mum, [...])
-        add_tistos(tupleTool.mup, [...])
-    Keyword arguments:
-    branch -- Instance of TupleToolDecay
-    triggers -- List of strings of triggers to record TISTOS info for
-    """
-    tistos = branch.addTupleTool("TupleToolTISTOS")
-    tistos.TriggerList = triggers
-    tistos.Verbose = True
-
-
-def decay_tree_tuple(name):
+def decay_tree_tuple(name, decay, mothers, daughters, inputs):
     """Return a configured DecayTreeTuple instance.
 
-    Details.
+    A DecayTreeTuple is configured with the given decay descriptor.
+    The mothers dictionary is used to give exclusive tools to vertices,
+    and it should be, as daughters, a dictionary of tuple branche names
+    to branch descriptors. A typical call to this method might look like
+        decay_tree_tuple(
+            "TupleLc2pKK",
+            "[Lambda_c+ -> ^p+ ^K- ^K+]cc",
+            {
+                "Lambdac": "[Lambda_c+]cc: [Lambda_c+ -> p+ %s %s]cc"
+            },
+            {
+                "h1": "[Lambda_c+ -> p+ ^K- K+]cc",
+                "h2": "[Lambda_c+ -> p+ K- ^K+]cc",
+                "proton": "[Lambda_c+ -> ^p+ K- K+]cc"
+            },
+            "Phys/MyStrippingLine/Particles"
+        )
+    Keyword arguments:
+    name -- TFile folder the DecayTree ntuple will be saved to
+    decay -- LoKi-style decay finder (http://cern.ch/go/9bHt)
+    mothers -- Branch descriptors to be added to the tuple as mothers,
+        decaying particles
+    daughters -- Branch descriptors to be added to the tuple as daughters,
+        products of mother decays which are not themselves mothers
+    branches -- Dictionary of branches to store in the ntuple
+    inputs -- str or list of strs, as the value of DecayTreeTuple.Inputs
     """
-    decay_descriptor = "[Lambda_b0 -> (^Lambda_c+ -> ^p+ ^{0} ^{1}) ^{2}]cc"
-    branches = {
-        "Lambdab": "[Lambda_b0]cc: [Lambda_b0 -> (Lambda_c+ -> p+ {0} {1}) {2}]cc",
-        "mu": "[Lambda_b0 -> (Lambda_c+ -> p+ {0} {1}) ^{2}]cc",
-        "Lambdac": "[Lambda_b0 -> (^Lambda_c+ -> p+ {0} {1}) {2}]cc",
-        "h1": "[Lambda_b0 -> (Lambda_c+ -> p+ ^{0} {1}) {2}]cc",
-        "h2": "[Lambda_b0 -> (Lambda_c+ -> p+ {0} ^{1}) {2}]cc",
-        "proton": "[Lambda_b0 -> (Lambda_c+ -> ^p+ {0} {1}) {2}]cc"
-    }
+    tuple_tools = [
+        "TupleToolEventInfo",
+        "TupleToolGeometry",
+        "TupleToolKinematic",
+        "TupleToolPid",
+        "TupleToolPrimaries",
+        "TupleToolTrackInfo"
+    ]
     triggers = [
         "L0HadronDecision",
         "L0MuonDecision",
@@ -54,7 +60,7 @@ def decay_tree_tuple(name):
         "Loki_MIPCHI2DV": "MIPCHI2DV(PRIMARY)",
         "Loki_BPVIPCHI2": "BPVIPCHI2()"
     }
-    baryon_loki_vars = {
+    mother_loki_vars = {
         "Loki_BPVVDCHI2": "BPVVDCHI2",
         "Loki_BPVIPCHI2": "BPVIPCHI2()",
         "Loki_DOCAMAX": "DOCAMAX",
@@ -70,33 +76,26 @@ def decay_tree_tuple(name):
 
     # Template DecayTreeTuple
     tuple_template = DecayTreeTuple(name)
-    tuple_template.Decay = decay_descriptor
-    tuple_template.addBranches(branches)
+    tuple_template.Inputs = inputs if type(inputs) is list else [inputs]
+    tuple_template.Decay = decay
+    # Merge the mother and daughter dictionaries
+    tuple_template.addBranches(dict(mothers.items() + daughters.items()))
     # Tools for all branches
-    tuple_template.ToolList = [
-        "TupleToolEventInfo",
-        "TupleToolGeometry",
-        "TupleToolKinematic",
-        "TupleToolPid",
-        "TupleToolPrimaries",
-        "TupleToolTrackInfo"
-    ]
+    tuple_template.ToolList = tuple_tools
     # Verbose reconstruction information
     tuple_template.addTupleTool("TupleToolRecoStats").Verbose = True
-    # Add triggers to mothers and muon
-    add_tistos(tuple_template.Lambdab, triggers)
-    add_tistos(tuple_template.Lambdac, triggers)
-    add_tistos(tuple_template.mu, triggers)
+    # TISTOS trigger information
+    tistos = tuple_template.addTupleTool("TupleToolTISTOS")
+    tistos.TriggerList = triggers
+    tistos.Verbose = True
     # Extra information from LoKi
     tuple_template.addTupleTool(
         "LoKi::Hybrid::TupleTool/basicLokiTT"
     ).Variables = basic_loki_vars
-    tuple_template.Lambdab.addTupleTool(
-        "LoKi::Hybrid::TupleTool/lbLokiTT"
-    ).Variables = baryon_loki_vars
-    tuple_template.Lambdac.addTupleTool(
-        "LoKi::Hybrid::TupleTool/lcLokiTT"
-    ).Variables = baryon_loki_vars
+    for mother in mothers:
+        get_attr(tuple_template, mother).addTupleTool(
+            "LoKi::Hybrid::TupleTool/{0}LokiTT".format(mother)
+        ).Variables = mother_loki_vars
 
     return tuple_template
 
