@@ -94,7 +94,7 @@ def decay_tree_tuple(name):
     tuple_template.Lambdab.addTupleTool(
         "LoKi::Hybrid::TupleTool/lbLokiTT"
     ).Variables = baryon_loki_vars
-    tuple_template.Lambdac.addTupleToo(
+    tuple_template.Lambdac.addTupleTool(
         "LoKi::Hybrid::TupleTool/lcLokiTT"
     ).Variables = baryon_loki_vars
 
