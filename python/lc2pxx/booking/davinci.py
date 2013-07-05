@@ -1,6 +1,5 @@
 from Gaudi.Configuration import *
 from Configurables import DaVinci, LoKiSvc
-from PhysConf.MicroDST import uDstConf
 
 from lc2pxx import config
 
@@ -16,7 +15,7 @@ def configure(year, mc):
 
     dv = DaVinci()
     # Output ntuple name
-    dv.TupleFile = config.ntuple_name
+    dv.TupleFile = "{0}.root".format(config.ntuple_name)
     # Process all events
     dv.EvtMax = -1
     # Print status every 1000 events
@@ -29,8 +28,8 @@ def configure(year, mc):
     # in MC
     if not mc:
         dv.InputType = "MDST"
-        # See http://cern.ch/go/B7mq
-        uDstConf("/Event/Charm")
+        # See "Question about microDST and RootInTES" in lhcb-davinci
+        dv.RootInTES = "/Event/Charm"
         # Add a GetIntegratedLuminosity/LumiTuple TTree to output
         dv.Lumi = True
 
