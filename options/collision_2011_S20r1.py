@@ -1,4 +1,4 @@
-from Configurables import DaVinci, FilterDesktop
+from Configurables import DaVinci, FilterDesktop, GaudiSequencer
 
 from lc2pxx import config
 from lc2pxx.booking import davinci, tuple_templates
@@ -53,10 +53,10 @@ for line in lines:
 
     # Create a tuple for the mode
     tuple = tuple_templates.decay_tree_tuple("Tuple{0}".format(line))
-    tuple.Decay = tuple.Decay.format(hads)
+    # The star unpacks the tuple, neat!
+    tuple.Decay = tuple.Decay.format(*tracks)
     tuple.Inputs = [inputs_template.format(filter_name)]
     for b in tuple.Branches:
-        # The star unpacks the tuple, neat!
         tuple.Branches[b] = tuple.Branches[b].format(*tracks)
 
     # Sequence to hold a succession of algorithms
