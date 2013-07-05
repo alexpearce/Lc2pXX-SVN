@@ -1,5 +1,6 @@
 from Configurables import DaVinci, FilterDesktop
 
+from lc2pxx import config
 from lc2pxx.booking import davinci, tuple_templates
 
 year = 2011
