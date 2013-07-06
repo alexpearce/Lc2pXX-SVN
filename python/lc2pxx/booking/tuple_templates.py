@@ -1,4 +1,8 @@
-from Configurables import DecayTreeTuple
+from Configurables import (
+    DecayTreeTuple,
+    MCDecayTreeTuple,
+    MCDecayFinder
+)
 from DecayTreeTuple.Configuration import *
 
 def decay_tree_tuple(name, decay, mothers, daughters, inputs):
@@ -98,4 +102,37 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs):
         ).Variables = mother_loki_vars
 
     return tuple_template
+
+
+def mc_decay_tree_tuple(name, decay, mothers, daughters):
+    """Return a configured MCDecayTreeTuple.
+
+    See decay_tree_tuple for an method call. Unlike decay_tree_tuple,
+    we don't require `inputs` because MCDecayTreeTuple doesn't need it.
+    Keyword arguments --
+    name -- TFile folder the DecayTree ntuple will be saved to
+    decay -- LoKi-style decay finder (http://cern.ch/go/9bHt)
+    mothers -- Branch descriptors to be added to the tuple as mothers,
+        decaying particles
+    daughters -- Branch descriptors to be added to the tuple as daughters,
+        products of mother decays which are not themselves mothers
+    branches -- Dictionary of branches to store in the ntuple
+    """
+    tuple = MCDecayTreeTuple(name)
+    tuple.Decay = decay
+    tuple.addTool(MCDecayFinder())
+    tuple.MCDecayFinder.ResonanceThreshold = 5e-10
+    tuple.Branches = dict(mothers.items() + daughters.items())
+    tuple.ToolList += [
+        "MCTupleToolPID",
+        "MCTupleToolKinematic",
+        "MCTupleToolReconstructed",
+        "MCTupleToolHierarchy",
+        # Generation TT causes null event pointer failure
+        "TupleToolGeneration",
+        "TupleToolEventInfo",
+        "TupleToolPrimaries"
+    ]
+
+    return tuple
 
