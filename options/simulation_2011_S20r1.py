@@ -15,6 +15,9 @@ mc = True
 
 davinci.configure(year, mc)
 
+# Add the CharmFromBSemiNoPIDs lines
+DaVinci().appendToMainSequence(b2lc_stream.stripping_sequence_nopids())
+
 lines = {
     "LcTo{0}".format(config.pKpi): {
         "stripping": "b2LcMuXCharmFromBSemiLine",
