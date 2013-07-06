@@ -23,6 +23,8 @@ def _get_environment_var(name):
 pKpi = "pKpi"
 pKK = "pKK"
 ppipi = "ppipi"
+pKSDD = "pKSDD"
+pKSLL = "pKSLL"
 modes = (pKpi, pKK, ppipi)
 
 # Map modes to Monte Carlo event types
