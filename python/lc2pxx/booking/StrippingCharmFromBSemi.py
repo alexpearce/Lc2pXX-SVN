@@ -242,7 +242,38 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
         self.selmuonL0TOS = TOSFilter( "SelMuL0TOS" + name,
                                        self.selmuon,
                                        "L0MuonDecision")
-        
+
+        ############ MUON SELECTIONS NO PID ###############
+
+        self.selmuonNoPIDs = Selection( "SelMuNoPIDsfor" + name,
+                                  Algorithm = self._muonFilterNoPIDs("Mufor"+name),
+                                  RequiredSelections = [StdNoPIDsMuons])
+
+        self.selmuonhighPTNoPIDs = Selection( "SelMuhighPTNoPIDsfor" + name,
+                                        Algorithm = FilterDesktop(name = "MuhighPTfor"+name,
+                                                                  Code = "(TRCHI2DOF < %(TRCHI2)s)"\
+                                                                  "& (PT>1.2*GeV) & (MIPCHI2DV(PRIMARY)> 9.0)" % self.__confdict__ ),
+                                        RequiredSelections = [self.selmuon])
+
+        self.selmuontightNoPIDs = Selection( "SelMutightNoPIDsfor" + name,
+                                       Algorithm = FilterDesktop( name = "Mutightfor"+name,
+                                                                  Code = "(MIPCHI2DV(PRIMARY)> 100)" ),
+                                       RequiredSelections = [self.selmuonhighPT])
+
+        self.selmuonnewNoPIDs = Selection( "SelMunewNoPIDsfor" + name,
+                                     Algorithm = FilterDesktop( name = "Munewfor"+name,
+                                                                Code = "(MIPCHI2DV(PRIMARY)> 9.0)"\
+                                                                "& (TRCHI2DOF < %(TRCHI2)s)" % self.__confdict__ ),
+                                     RequiredSelections = [self.selmuon])
+
+        self.selmuonTOSNoPIDs = TOSFilter( "SelMuTOSNoPIDs" + name,
+                                     self.selmuontight,
+                                     "Hlt2SingleMuonDecision")
+
+        self.selmuonL0TOSNoPIDs = TOSFilter( "SelMuL0TOSNoPIDs" + name,
+                                       self.selmuon,
+                                       "L0MuonDecision")
+
         ############### KAON AND PION SELECTIONS ################
         
         self.selKaon = Selection( "SelKfor" + name,
@@ -270,7 +301,35 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
         self.selKaonloose = Selection( "SelKloosefor" + name,
                                        Algorithm = self._kaonlooseFilter("Kloosefor"+name),
                                        RequiredSelections = [StdLooseKaons])
-        
+
+        ########### KAON AND PION SELECTIONS NO PID ##############
+
+        self.selKaonNoPIDs= Selection( "SelKNoPIDsfor" + name,
+                                  Algorithm = self._kaonFilterNoPIDs("Kfor"+name),
+                                  RequiredSelections = [StdNoPIDsKaons])
+
+        self.selPionNoPIDs = Selection( "SelPiNoPIDsfor" + name,
+                                  Algorithm = self._pionFilterNoPIDs("Pifor"+name),
+                                  RequiredSelections = [StdNoPIDsPions])
+
+        self.selProtonNoPIDs = Selection( "SelProtonNoPIDsfor" + name,
+                                  Algorithm = self._protonFilterNoPIDs("Protonfor"+name),
+                                  RequiredSelections = [StdNoPIDsProtons])
+
+        self.selPionTightNoPIDs = Selection( "SelPiTightNoPIDsfor" + name,
+                                       Algorithm = FilterDesktop( name = "PiTightFor"+name,
+                                                                  Code = "(TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                                                                  "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__ ),
+                                       RequiredSelections = [StdNoPIDsPions])
+
+        self.selPionlooseNoPIDs = Selection( "SelPilooseNoPIDsfor" + name,
+                                       Algorithm = self._pionlooseFilterNoPIDs("Piloosefor"+name),
+                                       RequiredSelections = [StdNoPIDsPions])
+
+        self.selKaonlooseNoPIDs = Selection( "SelKlooseNoPIDsfor" + name,
+                                       Algorithm = self._kaonlooseFilterNoPIDs("Kloosefor"+name),
+                                       RequiredSelections = [StdNoPIDsKaons])
+
         ############## PI0 SELECTIONS ############################
 
         self.selPi0ResolvedLoose = Selection( "SelPi0ResolvedLoosefor" + name,
@@ -491,43 +550,43 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
 
         self.selLc2L0Pi_DD = Selection( 'SelLc2LambdaDDPifor' + name,
                                         Algorithm = self._Lc2L0HFilter([ '[Lambda_c+ -> Lambda0 pi+]cc' ],'Lc2LambdaDDPifor' + name),
-                                        RequiredSelections = [self.selPionTight, self.selLambdaDD])
+                                        RequiredSelections = [self.selPionTightNoPIDs, self.selLambdaDD])
         
         self.selLc2L0Pi_LL = Selection( 'SelLc2LambdaLLPifor' + name,
                                         Algorithm = self._Lc2L0HFilter([ '[Lambda_c+ -> Lambda0 pi+]cc' ],'Lc2LambdaLLPifor' + name),
-                                        RequiredSelections = [self.selPionTight, self.selLambdaLL])
+                                        RequiredSelections = [self.selPionTightNoPIDs, self.selLambdaLL])
         
         self.selLc2L0K_DD = Selection( 'SelLc2LambdaDDKfor' + name,
                                        Algorithm = self._Lc2L0HFilter([ '[Lambda_c+ -> Lambda0 K+]cc' ],'Lc2LambdaDDKfor' + name),
-                                        RequiredSelections = [self.selKaon, self.selLambdaDD])
+                                        RequiredSelections = [self.selKaonNoPIDs, self.selLambdaDD])
         
         self.selLc2L0K_LL = Selection( 'SelLc2LambdaLLKfor' + name,
                                        Algorithm = self._Lc2L0HFilter([ '[Lambda_c+ -> Lambda0 K+]cc' ],'Lc2LambdaLLKfor' + name),
-                                        RequiredSelections = [self.selKaon, self.selLambdaLL])
+                                        RequiredSelections = [self.selKaonNoPIDs, self.selLambdaLL])
 
         self.selLc2pKK = Selection( 'SelLc2pKKfor' + name,
                                     Algorithm = self._Lc2pHHFilter([ '[Lambda_c+ -> p+ K- K+]cc' ],'Lc2pKKfor' + name),
-                                    RequiredSelections = [self.selKaon, self.selProton])
+                                    RequiredSelections = [self.selKaonNoPIDs, self.selProtonNoPIDs])
 
         self.selLc2pPiPi = Selection( 'SelLc2pPiPifor' + name,
                                       Algorithm = self._Lc2pHHFilter([ '[Lambda_c+ -> p+ pi- pi+]cc' ],'Lc2pPiPifor' + name),
-                                      RequiredSelections = [self.selPionTight, self.selProton])## tighter pion PID needed here to reduce retention
+                                      RequiredSelections = [self.selPionTightNoPIDs, self.selProtonNoPIDs])## tighter pion PID needed here to reduce retention
         
         self.sellambdac = Selection( 'SelLc2PKPifor' + name,
                                      Algorithm = self._Lc2pHHFilter([ '[Lambda_c+ -> K- p+ pi+]cc' ],'Lc2PKPifor' + name),
-                                     RequiredSelections = [self.selKaon, self.selPion, self.selProton ] )
+                                     RequiredSelections = [self.selKaonNoPIDs, self.selPionNoPIDs, self.selProtonNoPIDs ] )
         
         self.sellambdacDCS = Selection( 'SelLc2PKPiDCSfor' + name,
                                         Algorithm = self._Lc2pHHFilter([ '[Lambda_c+ -> K+ p+ pi-]cc' ],'Lc2PKPiDCSfor' + name),
-                                        RequiredSelections = [self.selKaon, self.selPion, self.selProton ] )
+                                        RequiredSelections = [self.selKaonNoPIDs, self.selPionNoPIDs, self.selProtonNoPIDs ] )
         
         self.sel_Lc2pKsLL = Selection("selLc2pKsLLfor"+name,
                                       Algorithm =  self._Lc2pKsFilter( ['[Lambda_c+ -> p+ KS0]cc'], 'Lc2pKsLLfor' + name),
-                                      RequiredSelections = [self.selProton, self.selKSLL ] )
+                                      RequiredSelections = [self.selProtonNoPIDs, self.selKSLL ] )
 
         self.sel_Lc2pKsDD = Selection("selLc2pKsDDfor"+name,
                                       Algorithm =  self._Lc2pKsFilter( ['[Lambda_c+ -> p+ KS0]cc'], 'Lc2pKsDDfor' + name),
-                                      RequiredSelections = [self.selProton, self.selKSDD ] )
+                                      RequiredSelections = [self.selProtonNoPIDs, self.selKSDD ] )
 
         #################### MAKE THE "B" CANDIDATES ##############################
         MuSel = self.selmuon 
@@ -628,7 +687,7 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
 
         ############## Lambda_b0 -> MU X Lambda_c -> X ############################
 
-        MuSel = self.selmuon
+        MuSel = self.selmuonNoPIDs
         BDecays = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc']
         self.selb2Lc2L0DDPiMuX = makeb2DMuX('b2Lc2L0DDPiMuX' + name,BDecays,MuSel,self.selLc2L0Pi_DD,BCuts)
         self.selb2Lc2L0LLPiMuX = makeb2DMuX('b2Lc2L0LLPiMuX' + name,BDecays,MuSel,self.selLc2L0Pi_LL,BCuts)
@@ -636,7 +695,7 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
         self.selb2Lc2L0LLKMuX = makeb2DMuX('b2Lc2L0LLKMuX' + name,BDecays,MuSel,self.selLc2L0K_LL,BCuts)
 
         ####### Lambda_c -> p K pi
-        MuSel = self.selmuonnew
+        MuSel = self.selmuonnewNoPIDs
         BDecays = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc']
         self.selb2LcMuX = makeb2DMuX('b2LcMuX' + name,BDecays,MuSel, self.sellambdac ,BCuts)
         self.selb2LcDCSMuX = makeb2DMuX('b2LcDCSMuX' + name, BDecays,MuSel,self.sellambdacDCS,BCuts)
@@ -644,7 +703,7 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
         self.selb2Lc2pKKMuX = makeb2DMuX('b2Lc2pKKMuX' + name, BDecays,MuSel,self.selLc2pKK,BCuts)
 
         ####### Lambda_c -> p Ks
-        MuSel = self.selmuonnew
+        MuSel = self.selmuonnewNoPIDs
         BDecays = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc']
         self.selb2LcMuXpKsLL = makeb2DMuX('b2LcMuXpKsLL' + name,BDecays,MuSel, self.sel_Lc2pKsLL,BCuts)
         self.selb2LcMuXpKsDD = makeb2DMuX('b2LcMuXpKsDD' + name,BDecays,MuSel, self.sel_Lc2pKsDD,BCuts)
@@ -751,10 +810,24 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
         _mu = FilterDesktop( name = _name, Code = _code )
         return _mu        
 
+    def _muonFilterNoPIDs( self , _name):
+        _code = "(PT > %(MuonPT)s *MeV) & (P> 3.0*GeV)"\
+                "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
+                "& (TRCHI2DOF< %(TRCHI2)s) & (MIPCHI2DV(PRIMARY)> %(MuonIPCHI2)s)" % self.__confdict__
+        _mu = FilterDesktop( name = _name, Code = _code )
+        return _mu        
+
     def _pionFilter( self , _name):
         _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
                 "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
                 "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s) &  (PIDK< %(PionPIDK)s)" % self.__confdict__
+        _pi = FilterDesktop( name = _name, Code = _code )
+        return _pi
+
+    def _pionFilterNoPIDs( self , _name):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__
         _pi = FilterDesktop( name = _name, Code = _code )
         return _pi
 
@@ -765,10 +838,24 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
         _ka = FilterDesktop( name = _name, Code = _code )
         return _ka 
 
+    def _kaonFilterNoPIDs( self , _name ):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__
+        _ka = FilterDesktop( name = _name, Code = _code )
+        return _ka 
+
     def _protonFilter( self, _name ):
         _code = "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV)"\
                 "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
                 "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)  &  (PIDp> %(KaonPIDK)s) & (PIDp-PIDK>1.0e-10)" % self.__confdict__ 
+        _pr = FilterDesktop( name = _name, Code = _code)
+        return _pr
+
+    def _protonFilterNoPIDs( self, _name ):
+        _code = "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV)"\
+                "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__ 
         _pr = FilterDesktop( name = _name, Code = _code)
         return _pr
         
@@ -778,8 +865,22 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
                 "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2Loose)s) &  (PIDK> %(KaonPIDKloose)s)" % self.__confdict__
         _kal = FilterDesktop( name = _name, Code = _code )
         return _kal 
+
+    def _kaonlooseFilterNoPIDs( self, _name ):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2Loose)s)" % self.__confdict__
+        _kal = FilterDesktop( name = _name, Code = _code )
+        return _kal 
     
     def _pionlooseFilter( self , _name):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2Loose)s)" % self.__confdict__
+        _pil = FilterDesktop( name = _name, Code = _code )
+        return _pil
+
+    def _pionlooseFilterNoPIDs( self , _name):
         _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
                 "& (TRGHOSTPROB< %(TrGhostProbMax)s)"\
                 "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2Loose)s)" % self.__confdict__
