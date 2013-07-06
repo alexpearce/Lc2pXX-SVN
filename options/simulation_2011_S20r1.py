@@ -8,7 +8,7 @@ from Configurables import (
 )
 
 from lc2pxx import config
-from lc2pxx.booking import davinci, tuple_templates
+from lc2pxx.booking import davinci, tuple_templates, b2lc_stream
 
 year = 2011
 mc = True
@@ -227,7 +227,8 @@ for line in lines:
     # Sequence for ntuple sequences
     tuples_sequence = GaudiSequencer("SeqTuples{0}".format(line))
     tuples_sequence.IgnoreFilterPassed = True
-    tuples_sequence.Members = [dec_sequence, mc_sequence, cheat_sequence]
+    # tuples_sequence.Members = [dec_sequence, mc_sequence, cheat_sequence]
+    tuples_sequence.Members = [dec_sequence]
 
     # Sequence for MC filter then ntuple sequences
     master_sequence = GaudiSequencer("SeqMaster{0}".format(line))

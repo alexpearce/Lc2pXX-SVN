@@ -21,7 +21,18 @@ from Configurables import FilterDesktop, CombineParticles, OfflineVertexFitter
 from PhysSelPython.Wrappers import Selection, DataOnDemand
 from StrippingConf.StrippingLine import StrippingLine
 from StrippingUtils.Utils import LineBuilder
-from StandardParticles import StdLoosePions, StdLooseMuons, StdLooseKaons, StdLooseProtons, StdNoPIDsPions, StdLooseMergedPi0,StdLooseResolvedPi0
+from StandardParticles import (
+    StdLoosePions,
+    StdLooseMuons,
+    StdLooseKaons,
+    StdLooseProtons,
+    StdNoPIDsPions,
+    StdNoPIDsMuons,
+    StdNoPIDsKaons,
+    StdNoPIDsProtons,
+    StdLooseMergedPi0,
+    StdLooseResolvedPi0
+)
 from Configurables import ConjugateNeutralPID
 from PhysSelPython.Wrappers import MergedSelection
 
