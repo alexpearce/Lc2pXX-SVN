@@ -41,17 +41,6 @@ lines = {
     }
 }
 
-# Lambda_c mass window of 75 MeV around the nominal PDG mass
-filter_template = FilterDesktop(
-    "FilterOfflineLc2phh",
-    Code="(MINTREE(ABSID=='Lambda_c+', ADMASS('Lambda_c+')) < 75*MeV)"
-)
-
-mc_filter_template = FilterEventByMCDecay("FilterMCLc2phh")
-mc_filter_template.addTool(MCDecayFinder)
-mc_filter_template.MCDecayFinder.Decay = mcDecTemplate
-mc_filter_template.MCDecayFinder.ResonanceThreshold = 5e-10
-
 inputs_template = "Phys/{0}/Particles"
 decay_template = "[Lambda_b0 -> (^Lambda_c+ -> ^p+ ^{0} ^{1}) ^{2}]cc"
 mother_templates = {
@@ -66,16 +55,27 @@ daughter_templates = {
 }
 
 mc_decay_template = "[Lambda_b0 => (^Lambda_c+ => ^p+ ^{0} ^{1}) ^{2} nu_mu~ ...]cc"
-mc_mothers = {
+mc_mother_templates = {
     "Lambdab": "[Lambda_b0]cc: [Lambda_b0 => (Lambda_c+ => p+ {0} {1}) {2} nu_mu~ ...]cc",
     "Lambdac": "[Lambda_b0 => (^Lambda_c+ => p+ {0} {1}) {2} nu_mu~ ...]cc"
 }
-mc_daughters = {
+mc_daughter_templates = {
     "mu": "[Lambda_b0 => (Lambda_c+ => p+ {0} {1}) ^{2} nu_mu~ ...]cc",
     "h1": "[Lambda_b0 => (Lambda_c+ => p+ ^{0} {1}) {2} nu_mu~ ...]cc",
     "h2": "[Lambda_b0 => (Lambda_c+ => p+ {0} ^{1}) {2} nu_mu~ ...]cc",
     "proton": "[Lambda_b0 => (Lambda_c+ => ^p+ {0} {1}) {2} nu_mu~ ...]cc"
 }
+
+# Lambda_c mass window of 75 MeV around the nominal PDG mass
+filter_template = FilterDesktop(
+    "FilterOfflineLc2phh",
+    Code="(MINTREE(ABSID=='Lambda_c+', ADMASS('Lambda_c+')) < 75*MeV)"
+)
+
+mc_filter_template = FilterEventByMCDecay("FilterMCLc2phh")
+mc_filter_template.addTool(MCDecayFinder)
+mc_filter_template.MCDecayFinder.Decay = mc_decay_template
+mc_filter_template.MCDecayFinder.ResonanceThreshold = 5e-10
 
 for line in lines:
     stripping = lines[line]["stripping"]

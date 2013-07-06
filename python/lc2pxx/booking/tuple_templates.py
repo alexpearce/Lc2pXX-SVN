@@ -97,7 +97,7 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs):
         "LoKi::Hybrid::TupleTool/basicLokiTT"
     ).Variables = basic_loki_vars
     for mother in mothers:
-        get_attr(tuple_template, mother).addTupleTool(
+        getattr(tuple_template, mother).addTupleTool(
             "LoKi::Hybrid::TupleTool/{0}LokiTT".format(mother)
         ).Variables = mother_loki_vars
 
@@ -129,7 +129,7 @@ def mc_decay_tree_tuple(name, decay, mothers, daughters):
         "MCTupleToolReconstructed",
         "MCTupleToolHierarchy",
         # Generation TT causes null event pointer failure
-        "TupleToolGeneration",
+        # "TupleToolGeneration",
         "TupleToolEventInfo",
         "TupleToolPrimaries"
     ]
