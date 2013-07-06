@@ -264,25 +264,25 @@ class CharmFromBSemiAllLinesConf(LineBuilder) :
                                         Algorithm = FilterDesktop(name = "MuhighPTfor"+name,
                                                                   Code = "(TRCHI2DOF < %(TRCHI2)s)"\
                                                                   "& (PT>1.2*GeV) & (MIPCHI2DV(PRIMARY)> 9.0)" % self.__confdict__ ),
-                                        RequiredSelections = [self.selmuon])
+                                        RequiredSelections = [self.selmuonNoPIDs])
 
         self.selmuontightNoPIDs = Selection( "SelMutightNoPIDsfor" + name,
                                        Algorithm = FilterDesktop( name = "Mutightfor"+name,
                                                                   Code = "(MIPCHI2DV(PRIMARY)> 100)" ),
-                                       RequiredSelections = [self.selmuonhighPT])
+                                       RequiredSelections = [self.selmuonhighPTNoPIDs])
 
         self.selmuonnewNoPIDs = Selection( "SelMunewNoPIDsfor" + name,
                                      Algorithm = FilterDesktop( name = "Munewfor"+name,
                                                                 Code = "(MIPCHI2DV(PRIMARY)> 9.0)"\
                                                                 "& (TRCHI2DOF < %(TRCHI2)s)" % self.__confdict__ ),
-                                     RequiredSelections = [self.selmuon])
+                                     RequiredSelections = [self.selmuonNoPIDs])
 
         self.selmuonTOSNoPIDs = TOSFilter( "SelMuTOSNoPIDs" + name,
-                                     self.selmuontight,
+                                     self.selmuontightNoPIDs,
                                      "Hlt2SingleMuonDecision")
 
         self.selmuonL0TOSNoPIDs = TOSFilter( "SelMuL0TOSNoPIDs" + name,
-                                       self.selmuon,
+                                       self.selmuonNoPIDs,
                                        "L0MuonDecision")
 
         ############### KAON AND PION SELECTIONS ################
