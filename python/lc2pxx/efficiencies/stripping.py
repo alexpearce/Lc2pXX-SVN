@@ -13,7 +13,6 @@ def efficiency(mode, polarity, year):
     in the collision stripping must be considered seperately.
     Candidates are truth matched.
     """
-
     truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
     tos_selection = "({0}) && ({1})".format(
         truth_matching, config.trigger_requirements

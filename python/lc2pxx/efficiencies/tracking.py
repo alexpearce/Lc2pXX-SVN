@@ -17,7 +17,6 @@ def efficiency(mode, polarity, year):
     This assumption needs to be shown.
     The tracking table used is ratio2011S20MC17 (http://cern.ch/go/r7sl).
     """
-
     tracking_table_f = ROOT.TFile("{0}/tracking_table.root".format(
         config.output_dir
     ))
