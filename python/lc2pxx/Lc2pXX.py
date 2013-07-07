@@ -81,7 +81,7 @@ class Lc2pXX(Ntuple.Ntuple):
     def passes_offline_cuts(self):
         """Return True if the current event passes the offline selection
         criteria, excluding PID."""
-        presel = self.passes_trigger() and self.passes_preselection()
+        presel = self.passes_preselection()
         doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
         vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
         specific = self.passes_specific_offline_cuts()
@@ -107,7 +107,10 @@ class Lc2pXX(Ntuple.Ntuple):
 
     def passes_selection(self):
         """Return True if the current event passes full selection."""
-        return self.passes_offline_cuts() and self.passes_pid_cuts()
+        trigger = self.passes_trigger()
+        offline = self.passes_offline_cuts()
+        pid = self.passes_pid_cuts()
+        return trigger and offline and pid
 
     def activate_selection_branches(self):
         """Activate all branches required for selection."""
@@ -155,7 +158,10 @@ class Lc2pXX(Ntuple.Ntuple):
                 "signal_sw",
                 "background_sw",
                 "accepted",
-                "triggered"
+                "triggered",
+                "h1_h2_M",
+                "p_h1_M",
+                "p_h2_M"
             ]
         self.activate_branches(branches)
 
