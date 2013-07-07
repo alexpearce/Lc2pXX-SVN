@@ -58,45 +58,75 @@ class Lc2pXX(Ntuple.Ntuple):
                 self.val("Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"))
         return l0 and hlt1 and hlt2
 
+    # Any selection here must be passed as a string in
+    # ntuples.create_metatree, so if you edit this, edit that
     def passes_preselection(self):
         """Return True if current event passes preselection cuts."""
         # Lc mass window cut prevents poor fitting due to outliers
         lc_mass = config.lc_m_low < self.val("Lambdac_M") < config.lc_m_high
-        return lc_mass
+        # All final state momenta 2 < p < 100 GeV, eta 1.5 < n < 5
+        # These are the limits impose on the PID calibration samples,
+        # so we must implement them too
+        mu_veto = 2e3 < self.val("mu_P") < 1e5
+        mu_veto = mu_veto and 1.5 < self.val("mu_ETA") < 5
+        proton_veto = 2e3 < self.val("proton_P") < 1e5
+        proton_veto = proton_veto and 1.5 < self.val("proton_ETA") < 5
+        h1_veto = 2e3 < self.val("h1_P") < 1e5
+        h1_veto = h1_veto and 1.5 < self.val("h1_ETA") < 5
+        h2_veto = 2e3 < self.val("h2_P") < 1e5
+        h2_veto = h2_veto and 1.5 < self.val("h2_ETA") < 5
+        vetoes = mu_veto and h1_veto and h2_veto and proton_veto
+        return lc_mass and vetoes
 
-    def passes_common_cuts(self):
-        """Return True if the current event passes selection criteria
-        common to all decay modes."""
-        # TODO kinematic vetoes, but they might be better in preselection
+    def passes_offline_cuts(self):
+        """Return True if the current event passes the offline selection
+        criteria, excluding PID."""
         presel = self.passes_trigger() and self.passes_preselection()
-        probnn = self.val("proton_ProbNNp") > 0.5
         doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
         vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
-        return presel and probnn and doca and vertex
+        specific = self.passes_specific_offline_cuts()
+        return presel and doca and vertex and specific
 
-    def passes_specific_cuts(self):
-        """Return True if the current event passes selection criteria
+    def passes_specific_offline_cuts(self):
+        """Return True if the current event passes the offline selection
+        criteria specific to an Lc decay modes.
+
+        To be implemented by child classes.
+        """
+        log.error("Base Lc2pXX.passes_specific_offline_cuts called.")
+        return True
+
+    def passes_pid_cuts(self):
+        """Return True if the current event passes PID selection criteria
         specific to an Lc decay modes.
 
         To be implemented by child classes.
         """
-        log.error("Base Lc2pXX.passes_specific_cuts called.")
+        log.error("Base Lc2pXX.passes_pid_cuts called.")
         return True
 
     def passes_selection(self):
         """Return True if the current event passes full selection."""
-        return self.passes_common_cuts() and self.passes_specific_cuts()
+        return self.passes_offline_cuts() and self.passes_pid_cuts()
 
     def activate_selection_branches(self):
         """Activate all branches required for selection."""
         branches = [
             "Lambdac_M",
+            "mu_P",
+            "mu_ETA",
+            "proton_P",
+            "proton_ETA",
             "proton_ProbNNp",
             "proton_ProbNNk",
             "proton_ProbNNpi",
+            "h1_P",
+            "h1_ETA",
             "h1_ProbNNp",
             "h1_ProbNNk",
             "h1_ProbNNpi",
+            "h2_P",
+            "h2_ETA",
             "h2_ProbNNp",
             "h2_ProbNNk",
             "h2_ProbNNpi",
@@ -140,11 +170,16 @@ class Lc2pKpi(Lc2pXX):
         log.info("Initialising Lc2pKpi")
         super(Lc2pKpi, self).__init__(name, polarity, year)
 
-    def passes_specific_cuts(self):
+    def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
+        return True
+
+    def passes_pid_cuts(self):
+        """True if current event passes mode-specific PID criteria."""
+        proton = self.val("proton_ProbNNp") > 0.5
         h1 = self.val("h1_ProbNNk") > 0.5
         h2 = self.val("h2_ProbNNpi") > 0.7
-        probnn = h1 and h2
+        probnn = proton and h1 and h2
         return probnn
 
 
@@ -158,11 +193,16 @@ class Lc2pKK(Lc2pXX):
         log.info("Initialising Lc2pKK")
         super(Lc2pKK, self).__init__(name, polarity, year)
 
-    def passes_specific_cuts(self):
+    def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
+        return True
+
+    def passes_pid_cuts(self):
+        """True if current event passes mode-specific PID criteria."""
+        proton = self.val("proton_ProbNNp") > 0.5
         h1 = self.val("h1_ProbNNk") > 0.5
         h2 = self.val("h2_ProbNNk") > 0.5
-        probnn = h1 and h2
+        probnn = proton and h1 and h2
         return probnn
 
 
@@ -176,11 +216,18 @@ class Lc2ppipi(Lc2pXX):
         log.info("Initialising Lc2ppipi")
         super(Lc2ppipi, self).__init__(name, polarity, year)
 
-    def passes_specific_cuts(self):
+    def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
+        # Remove KS -> pi+pi- resonance
+        ks = 480 < self.val("h1_h2_M") < 520
+        return True
+
+    def passes_pid_cuts(self):
+        """True if current event passes mode-specific PID criteria."""
         # TODO pipi inv. mass cut to remove K*
+        proton = self.val("proton_ProbNNp") > 0.5
         h1 = self.val("h1_ProbNNpi") > 0.7
         h2 = self.val("h2_ProbNNpi") > 0.7
-        probnn = h1 and h2
+        probnn = proton and h1 and h2
         return probnn
 

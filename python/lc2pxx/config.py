@@ -132,4 +132,15 @@ lc_m_high = 2360
 lc_m_window = "({0} < Lambdac_M) && (Lambdac_M < {1})".format(
     lc_m_low, lc_m_high
 )
+# Kinematic vetoes to match PID calibration samples
+kinematic_vetoes = "&&".join([
+    "2e3 < mu_P && mu_P < 1e5",
+    "1.5 < mu_ETA && mu_ETA < 5",
+    "2e3 < proton_P && proton_P < 1e5",
+    "1.5 < proton_ETA && proton_ETA < 5",
+    "2e3 < h1_P && h1_P < 1e5",
+    "1.5 < h1_ETA && h1_ETA < 5",
+    "2e3 < h2_P && h2_P < 1e5",
+    "1.5 < h2_ETA && h2_ETA < 5"
+])
 
