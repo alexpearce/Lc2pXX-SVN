@@ -160,7 +160,8 @@ for line in lines:
         mothers,
         daughters,
         # The input to the tuple is the output of the filter
-        inputs_template.format(filter_name)
+        inputs_template.format(filter_name),
+        mc
     )
 
     # MCDecayTreeTuple

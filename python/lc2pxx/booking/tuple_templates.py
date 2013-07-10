@@ -5,7 +5,7 @@ from Configurables import (
 )
 from DecayTreeTuple.Configuration import *
 
-def decay_tree_tuple(name, decay, mothers, daughters, inputs):
+def decay_tree_tuple(name, decay, mothers, daughters, inputs, mc=False):
     """Return a configured DecayTreeTuple instance.
 
     A DecayTreeTuple is configured with the given decay descriptor.
@@ -34,6 +34,7 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs):
         products of mother decays which are not themselves mothers
     branches -- Dictionary of branches to store in the ntuple
     inputs -- str or list of strs, as the value of DecayTreeTuple.Inputs
+    mc -- If True, include some useful MC tuple tools
     """
     tuple_tools = [
         "TupleToolEventInfo",
@@ -43,6 +44,10 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs):
         "TupleToolPrimaries",
         "TupleToolTrackInfo"
     ]
+    if mc:
+        tuple_tools += [
+            "TupleToolMCTruth"
+        ]
     triggers = [
         "L0HadronDecision",
         "L0MuonDecision",
@@ -97,9 +102,13 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs):
         "LoKi::Hybrid::TupleTool/basicLokiTT"
     ).Variables = basic_loki_vars
     for mother in mothers:
-        getattr(tuple_template, mother).addTupleTool(
+        m = getattr(tuple_template, mother)
+        m.addTupleTool(
             "LoKi::Hybrid::TupleTool/{0}LokiTT".format(mother)
         ).Variables = mother_loki_vars
+        if mc:
+            # BKGCAT
+            m.addTupleTool("TupleToolMCBackgroundInfo")
 
     return tuple_template
 
