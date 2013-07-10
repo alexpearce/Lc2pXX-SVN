@@ -13,9 +13,13 @@ def efficiency(mode, polarity, year):
         No. passing all selection / No. passing all selection but offline
     The numbers are retrieved from data with unbinned fits to Lambdac_M.
     """
-    n = ntuples.get_ntuple(mode, polarity, year)
+    n = ntuples.get_ntuple(mode, config.magboth, year)
     ntuples.add_metatree(n)
     n.activate_selection_branches()
+    n.activate_branches([
+        "Polarity"
+    ], append=True)
+    polarity_int = [-1, 1][polarity == config.magup]
 
     temp_name = "TempTree"
     mass_var = "Lambdac_M"
@@ -34,6 +38,11 @@ def efficiency(mode, polarity, year):
 
     print "Creating temporary trees for offline selection efficiency."
     for entry in n:
+        # Check the polarity matches the argument, unless it's magboth
+        # in which case any polarity here is good
+        is_polarity = n.val("Polarity") == polarity_int
+        if not is_polarity and not polarity == config.magboth:
+            continue
         trigger = n.passes_trigger()
         pid = n.passes_pid_cuts()
         offline = n.passes_offline_cuts()

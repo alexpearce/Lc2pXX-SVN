@@ -17,9 +17,22 @@ class Ntuple(ROOT.TChain):
             ...
     Looping can be speeded up with the use of activate_branches.
     """
-    # ROOT TBranch types corresponding the Python types
-    int_types = ("B", "b", "S", "s", "I", "i", "L", "l", "O")
-    float_types = ("F", "D")
+    # ROOT TBranch types corresponding the numpy types
+    types_map = {
+        # int-like
+        "B": "int8",
+        "b": "uint8",
+        "S": "int16",
+        "s": "uint16",
+        "I": "int32",
+        "i": "uint32",
+        "L": "int64",
+        "l": "uint64",
+        "O": bool,
+        # float-like
+        "F": "float32",
+        "D": "float64"
+    }
     def __init__(self, name):
         """Initialise an Ntuple object.
 
@@ -134,10 +147,7 @@ class Ntuple(ROOT.TChain):
             # Don't bind to branches containing arrays
             if title.find("[") >= 0: continue
             btype = title.split("/")[-1]
-            if btype in Ntuple.int_types:
-                dtype = int
-            elif btype in Ntuple.float_types:
-                dtype = float
+            dtype = Ntuple.types_map[btype]
             # Use the key value if it exists, else create one
             try:
                 z = self.vars[name]

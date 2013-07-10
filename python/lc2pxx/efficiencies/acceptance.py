@@ -51,6 +51,11 @@ def efficiency(mode, polarity, year):
             config.magdown: ufloat(0.1564, 0.00102)
         }
     }
+    for m in config.modes:
+        effs = efficiencies_2011[m]
+        up = effs[config.magup]
+        down = effs[config.magdown]
+        effs[config.magboth] = (up + down)/2
 
     efficiencies_2012 = {
         config.pKpi: {

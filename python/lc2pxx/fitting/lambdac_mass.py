@@ -259,6 +259,24 @@ def _single_crystal_ball(workspace):
     ")".format(consts["pdf_sig"], consts["var_name"]))
 
 
+def _gaussian_crystal_ball(workspace):
+    """Add a Gaussian + Crystal Ball signal PDF to the workspace."""
+    log.info("Adding Gaussian Crystal Ball signal PDF to workspace.")
+    workspace.factory("mu[2290, 2285, 2295]")
+    workspace.factory("sigma_one[4, 0, 8]")
+    workspace.factory("sigma_two[7, 4, 15]")
+    workspace.factory("alpha[1.5, -5, 5]")
+    workspace.factory("n[2, 1, 10]")
+    workspace.factory("RooGaussian::pdf_gauss_one("
+        "{0}, mu, sigma_one"
+    ")".format(consts["var_name"]))
+    workspace.factory("RooCBShape::pdf_cb_two("
+        "{0}, mu, sigma_two, alpha, n"
+    ")".format(consts["var_name"]))
+    workspace.factory("SUM::{0}("
+        "pdf_gauss_one, num_gauss[0.5, 0, 1]*pdf_cb_two"
+    ")".format(consts["pdf_sig"]))
+
 # Background PDFs
 def _exponential(workspace):
     """Add exponential background PDF to the workspace."""
@@ -281,7 +299,8 @@ shapes_sig = {
     "DGS": _double_gaussian,
     "SGS": _single_gaussian,
     "DCB": _double_crystal_ball,
-    "SCB": _single_crystal_ball
+    "SCB": _single_crystal_ball,
+    "GCB": _gaussian_crystal_ball
 }
 
 shapes_bkg = {

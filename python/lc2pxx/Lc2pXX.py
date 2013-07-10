@@ -169,8 +169,8 @@ class Lc2pXX(Ntuple.Ntuple):
 class Lc2pKpi(Lc2pXX):
     """Wrapper class for Lc to pKpi decay ntuples."""
     mode = config.pKpi
-    shapes_preselection = ("DGS", "EXP")
-    shapes_postselection = ("DGS", "EXP")
+    shapes_preselection = ("GCB", "EXP")
+    shapes_postselection = ("GCB", "EXP")
     def __init__(self, name, polarity, year):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKpi")
@@ -224,13 +224,13 @@ class Lc2ppipi(Lc2pXX):
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
-        # Remove KS -> pi+pi- resonance
-        ks = 480 < self.val("h1_h2_M") < 520
-        return True
+        h1_h2_M = self.val("h1_h2_M")
+        # Require pi+pi- invariant mass outside KS window
+        ks = h1_h2_M < 480. or h1_h2_M > 520.
+        return ks
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
-        # TODO pipi inv. mass cut to remove K*
         proton = self.val("proton_ProbNNp") > 0.5
         h1 = self.val("h1_ProbNNpi") > 0.7
         h2 = self.val("h2_ProbNNpi") > 0.7
