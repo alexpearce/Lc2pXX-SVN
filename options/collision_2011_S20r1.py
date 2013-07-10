@@ -1,4 +1,10 @@
-from Configurables import DaVinci, FilterDesktop, GaudiSequencer
+from Configurables import (
+    DaVinci,
+    FilterDesktop,
+    GaudiSequencer,
+    DecayTreeTuple
+)
+from DecayTreeTuple.Configuration import *
 
 from lc2pxx import config
 from lc2pxx.booking import davinci, tuple_templates
@@ -77,8 +83,12 @@ for line in lines:
         mothers,
         daughters,
         # The input to the tuple is the output of the filter
-        inputs_template.format(filter_name)
+        inputs_template.format(filter_name),
+        mc
     )
+    # Refit the decay tree, storing refitted daughter information
+    dtf = tuple_template.Lambdab.addTupleTool("TupleToolDecayTreeFitter")
+    dtf.Verbose = True
 
     # Sequence to hold a succession of algorithms
     sequence = GaudiSequencer("SequenceBook{0}".format(line))
