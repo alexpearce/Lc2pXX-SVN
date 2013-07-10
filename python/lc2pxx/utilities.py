@@ -8,6 +8,7 @@ import sys
 import logging as log
 import tempfile
 import random
+import re
 from math import sqrt
 
 import ROOT
@@ -87,6 +88,11 @@ def significance(signal, background):
 def random_str():
     """Generates a 30 character string of random letters and numbers."""
     return "%030x" % random.randrange(256**15)
+
+
+def sanitise(dirty):
+    """Substitutes all characters outside [A-za-z0-9_] with _."""
+    return re.sub(r"\W+", "", dirty.lower().replace(" ", "_"))
 
 
 def binomial_error(k, n):
