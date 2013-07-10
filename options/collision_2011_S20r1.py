@@ -87,7 +87,7 @@ for line in lines:
         mc
     )
     # Refit the decay tree, storing refitted daughter information
-    dtf = tuple.Lambdab.addTupleTool("TupleToolDecayTreeFitter")
+    dtf = tuple.Lambdab.addTupleTool("TupleToolDecayTreeFitter/Fit")
     dtf.Verbose = True
 
     # Sequence to hold a succession of algorithms

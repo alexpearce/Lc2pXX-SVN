@@ -71,8 +71,12 @@ for line in lines:
         mothers,
         daughters,
         # The input to the tuple is the output of the filter
-        inputs_template.format(filter_name)
+        inputs_template.format(filter_name),
+        mc
     )
+    # Refit the decay tree, storing refitted daughter information
+    dtf = tuple.Lambdab.addTupleTool("TupleToolDecayTreeFitter/Fit")
+    dtf.Verbose = True
 
     # Sequence to hold a succession of algorithms
     sequence = GaudiSequencer("SequenceBook{0}".format(line))
