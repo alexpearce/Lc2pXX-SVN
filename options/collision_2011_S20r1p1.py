@@ -1,4 +1,10 @@
-from Configurables import DaVinci, FilterDesktop, GaudiSequencer
+from Configurables import (
+    DaVinci,
+    FilterDesktop,
+    GaudiSequencer,
+    DecayTreeTuple
+)
+from DecayTreeTuple.Configuration import *
 
 from lc2pxx import config
 from lc2pxx.booking import davinci, tuple_templates
@@ -7,12 +13,6 @@ year = 2011
 mc = False
 
 davinci.configure(year, mc)
-
-# Lambda_c mass window of 75 MeV around the nominal PDG mass
-filter_template = FilterDesktop(
-    "FilterOfflineLc2phh",
-    Code="(MINTREE(ABSID=='Lambda_c+', ADMASS('Lambda_c+')) < 75*MeV)"
-)
 
 # KS lines
 lines = {
@@ -33,6 +33,12 @@ lines = {
         "tracks": "mu+"
     }
 }
+
+# Lambda_c mass window of 75 MeV around the nominal PDG mass
+filter_template = FilterDesktop(
+    "FilterOfflineLc2phh",
+    Code="(MINTREE(ABSID=='Lambda_c+', ADMASS('Lambda_c+')) < 75*MeV)"
+)
 
 inputs_template = "Phys/{0}/Particles"
 decay_template = "[Lambda_b0 -> (^Lambda_c+ -> ^p+ (^KS0 -> ^pi- ^pi+)) ^{0}]cc"
