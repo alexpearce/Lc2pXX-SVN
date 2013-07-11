@@ -294,6 +294,17 @@ def plot_fit(workspace, pdfs, var, bins=70, pull=True):
     frame.Draw("L")
     legend.Draw()
 
+    # Change the y-axis label "Events" to "Candidates"
+    y_axis = frame.GetYaxis()
+    y_axis.SetTitle(y_axis.GetTitle().replace("Events", "Candidates"))
+    if x.getUnits() != "":
+        # For consistency, change unit braces from () to []
+        x_axis = frame.GetXaxis()
+        # Title components split by spaces, the last in the units
+        x_title = x_axis.GetTitle().split(" ")
+        x_units = x_title[-1].replace("(", "[").replace(")", "]")
+        x_axis.SetTitle(" ".join(x_title[0:-1] + [x_units]))
+
     canvas.l = legend
 
     return canvas
