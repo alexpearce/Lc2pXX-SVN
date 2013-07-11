@@ -6,20 +6,6 @@ import numpy as np
 from lc2pxx import config, utilities, ntuples, fitting, plotting
 from lc2pxx.Ntuple import Ntuple
 
-def save_to_file(filename, objects):
-    """Creates a TFile called filename, then writes each object to the file.
-
-    Keyword arguments:
-    filename -- Name of the filename the objects will be saved in to.
-        If filename already exists, it is overwritten.
-    objects -- List of objects implementing TObject.Write.
-    """
-    file = ROOT.TFile(filename, "recreate")
-    for object in objects: object.Write()
-    file.Write()
-    file.Close()
-
-
 def link_branches(source, destination, branches):
     """Links branches to source to new branches in destination.
 
@@ -81,7 +67,7 @@ def setup_analysis(mode, polarity, year):
             mass_var,
             bins=140
         )
-        save_to_file("{0}/fits/sWeights-{1}.root".format(
+        utilities.save_to_file("{0}/fits/sWeights-{1}.root".format(
             config.output_dir, n
         ), [w, c])
         ntuples.add_metatree(n)
@@ -154,7 +140,7 @@ def setup_analysis(mode, polarity, year):
         mass_var,
         bins=num_bins
     )
-    save_to_file("{0}/fits/selected-{1}.root".format(
+    utilities.save_to_file("{0}/fits/selected-{1}.root".format(
         config.output_dir, n
     ), [w, c])
 

@@ -60,6 +60,20 @@ def delete_temp_file(file):
         ))
 
 
+def save_to_file(filename, objects):
+    """Creates a TFile called filename, then writes each object to the file.
+
+    Keyword arguments:
+    filename -- Name of the filename the objects will be saved in to.
+        If filename already exists, it is overwritten.
+    objects -- List of objects implementing TObject.Write.
+    """
+    file = ROOT.TFile(filename, "recreate")
+    for object in objects: object.Write()
+    file.Write()
+    file.Close()
+
+
 def file_exists(path):
     """Returns True if anything exists at the given path."""
     # http://cern.ch/go/9rxQ
