@@ -74,12 +74,9 @@ def get_ntuple(mode, polarity, year, mc=False, mc_type=None):
         year, mode, polarity
     ))
 
-    nickname = config.mc_nicknames[mode]
     decay_tree = "TupleLcTo{0}/DecayTree".format(mode)
-    mc_tree = "MCTupleGenLcTo{0}/MCDecayTree".format(nickname)
-    cheat_tree = "TupleCombineCheatedLb0TomuLcTo{0}/DecayTree".format(
-        nickname
-    )
+    mc_tree = "MCGenTupleLcTo{0}/MCDecayTree".format(mode)
+    cheat_tree = "TupleCombineCheatedLbTomuLcTo{0}/DecayTree".format(mode)
 
     if not mc or mc_type is config.mc_stripped:
         tree_name = decay_tree

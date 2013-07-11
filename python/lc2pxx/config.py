@@ -34,13 +34,6 @@ mc_event_types = {
     pKK: 15674000,
     ppipi: 15674010
 }
-# Map modes to Monte Carlo ntuple "nicknames",
-# essentially verbose mode strings
-mc_nicknames = {
-    pKpi: "pKmpip",
-    pKK: "pKmKp",
-    ppipi: "ppimpip"
-}
 # Types of Monte Carlo ntuple produced
 mc_generated = "generated"
 mc_cheated = "cheated"
