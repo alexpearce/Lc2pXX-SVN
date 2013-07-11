@@ -23,10 +23,12 @@ def link_branches(source, destination, branches):
     dtype_map = dict((v, k) for k, v in Ntuple.types_map.iteritems())
     # Link all activated branches in the original to the selected
     for b in branches:
-        if type(b) is str:
-            b_name = b
-        else:
+        # If branches is a list of TBranchs, get the name, else just use
+        # the string
+        try:
             b_name = b.GetName()
+        except AttributeError:
+            b_name = b
         # GetBranchStatus is 1 for an activated branch
         if source.GetBranchStatus(b_name) == 1:
             ref = source.val(b_name, reference=True)

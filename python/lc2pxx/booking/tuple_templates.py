@@ -85,7 +85,12 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs, mc=False):
 
     # Template DecayTreeTuple
     tuple_template = DecayTreeTuple(name)
-    tuple_template.Inputs = inputs if type(inputs) is list else [inputs]
+    # DecayTreeTuple.Inputs takes a list, but inputs might be a string
+    # So try assign it, but wrap it in a list if we get a ValueError
+    try:
+        tuple_template.Inputs = inputs
+    except ValueError:
+        tuple_template.Inputs = [inputs]
     tuple_template.Decay = decay
     # Merge the mother and daughter dictionaries
     tuple_template.addBranches(dict(mothers.items() + daughters.items()))
