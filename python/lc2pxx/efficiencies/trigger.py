@@ -104,8 +104,8 @@ def efficiency_tistos(mode, polarity, year):
 
     temp_n_pre = n.__class__.from_tree(temp_t_pre, n.polarity, n.year)
     temp_n_post = n.__class__.from_tree(temp_t_post, n.polarity, n.year)
-    w_pre = ROOT.RooWorkspace("{0}-pre-workspace".format(n))
-    w_post = ROOT.RooWorkspace("{0}-post-workspace".format(n))
+    w_pre = ROOT.RooWorkspace("{0}-tis-workspace".format(n))
+    w_post = ROOT.RooWorkspace("{0}-tistos-workspace".format(n))
     # Unbinned fit
     fitting.lambdac_mass.fit(
         temp_n_pre, w_pre, n.shapes_postselection, bins=0
@@ -118,7 +118,7 @@ def efficiency_tistos(mode, polarity, year):
     print yields_pre
     print yields_post
 
-    plotting.plot_fit(
+    c_pre = plotting.plot_fit(
         w_pre, [
             ("total_pdf", "Fit"),
             ("signal_pdf", "Signal"),
@@ -126,8 +126,8 @@ def efficiency_tistos(mode, polarity, year):
         ],
         mass_var,
         bins=140
-    ).SaveAs("{0}/fits/tis-{1}.pdf".format(config.output_dir, n))
-    plotting.plot_fit(
+    )
+    c_post = plotting.plot_fit(
         w_post, [
             ("total_pdf", "Fit"),
             ("signal_pdf", "Signal"),
@@ -135,7 +135,12 @@ def efficiency_tistos(mode, polarity, year):
         ],
         mass_var,
         bins=140
-    ).SaveAs("{0}/fits/tistos-{1}.pdf".format(config.output_dir, n))
+    )
+
+    utilities.save_to_file("{0}/fits/tistos-{1}.root".format(
+        config.output_dir, n
+    ), [w_pre, w_post, c_pre, c_post])
+
 
     utilities.delete_temp_file(temp_f_pre)
     utilities.delete_temp_file(temp_f_post)
