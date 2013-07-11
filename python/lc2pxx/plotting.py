@@ -297,7 +297,7 @@ def plot_fit(workspace, pdfs, var, bins=70, pull=True):
     # Change the y-axis label "Events" to "Candidates"
     y_axis = frame.GetYaxis()
     y_axis.SetTitle(y_axis.GetTitle().replace("Events", "Candidates"))
-    if x.getUnits() != "":
+    if x.getUnit() != "":
         # For consistency, change unit braces from () to []
         x_axis = frame.GetXaxis()
         # Title components split by spaces, the last in the units
