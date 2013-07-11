@@ -28,7 +28,7 @@ class Ntuple(ROOT.TChain):
         "i": "uint32",
         "L": "int64",
         "l": "uint64",
-        "O": bool,
+        "O": "bool",
         # float-like
         "F": "float32",
         "D": "float64"
