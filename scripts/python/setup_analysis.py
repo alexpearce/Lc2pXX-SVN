@@ -116,11 +116,19 @@ def setup_analysis(mode, polarity, year):
         ref_branches = list(n.GetListOfBranches())
         # Link branches from ntuple TTree to selected TTree
         link_branches(n, sel_t, ref_branches)
-        # Link all activated branches from from trees, too
+        # Link all branches from friend trees, including current deactive
         friends = n.GetListOfFriends()
         for f in friends:
-            friend_branches = list(f.GetTree().GetListOfBranches())
-            link_branches(n, sel_t, friend_branches)
+            ft = f.GetTree()
+            fb = list(ft.GetListOfBranches())
+            for b in fb:
+                # Activating branches on the friend tree directly
+                # doesn't activate them on the "master" tree, so we must
+                # loop through the friend's branches and do it manually
+                # We activate all friend branches as they're all quite
+                # useful
+                n.SetBranchStatus(b.GetName(), 1)
+            link_branches(n, sel_t, fb)
         print "Creating selected tree for", n
         for entry in n:
             if n.passes_selection():
@@ -158,8 +166,6 @@ def setup_analysis(mode, polarity, year):
 
 
 if __name__ == "__main__":
-    setup_analysis(config.pKK, config.magboth, 2011)
-    exit()
     for mode in config.modes:
         setup_analysis(mode, config.magboth, 2011)
 
