@@ -160,7 +160,7 @@ def yields(workspace):
     int_bkg = workspace.pdf(consts["pdf_bkg"]).createIntegral(
         x_set, x_set, range
     ).getVal()
-    
+
     yield_sig_var = workspace.var(consts["yield_sig"])
     yield_bkg_var = workspace.var(consts["yield_bkg"])
     yield_sig_num = int_sig*yield_sig_var.getVal()
