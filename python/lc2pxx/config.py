@@ -25,7 +25,7 @@ pKK = "pKK"
 ppipi = "ppipi"
 pKSDD = "pKSDD"
 pKSLL = "pKSLL"
-modes = (pKpi, pKK, ppipi)
+modes = (pKpi, pKK, ppipi, pKSLL, pKSDD)
 
 # Map modes to Monte Carlo event types
 # http://cern.ch/go/Fkl8
@@ -46,6 +46,7 @@ kp_latex = "K^{+}"
 km_latex = "K^{#font[122]{-}}"
 pip_latex = "#pi^{+}"
 pim_latex = "#pi^{#font[122]{-}}"
+ks_latex = "K_{S}^{0}"
 proton_latex = "p"
 lambdac_latex = "#Lambda_{c}^{+}"
 daughters = ("proton", "h1", "h2")
@@ -64,6 +65,16 @@ daughters_latex = {
         "proton": proton_latex,
         "h1": pim_latex,
         "h2": pip_latex
+    },
+    pKSLL: {
+        "proton": proton_latex,
+        "h1": ks_latex,
+        "h2": "(LL)"
+    },
+    pKSDD: {
+        "proton": proton_latex,
+        "h1": ks_latex,
+        "h2": "(DD)"
     }
 }
 modes_latex = {}
