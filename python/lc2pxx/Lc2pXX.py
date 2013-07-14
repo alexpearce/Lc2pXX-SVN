@@ -82,10 +82,8 @@ class Lc2pXX(Ntuple.Ntuple):
         """Return True if the current event passes the offline selection
         criteria, excluding PID."""
         presel = self.passes_preselection()
-        doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
-        vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
         specific = self.passes_specific_offline_cuts()
-        return presel and doca and vertex and specific
+        return presel and specific
 
     def passes_specific_offline_cuts(self):
         """Return True if the current event passes the offline selection
@@ -178,7 +176,9 @@ class Lc2pKpi(Lc2pXX):
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
-        return True
+        doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
+        vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
+        return doca and vertex
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
@@ -201,7 +201,9 @@ class Lc2pKK(Lc2pXX):
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
-        return True
+        doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
+        vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
+        return doca and vertex
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
@@ -227,7 +229,9 @@ class Lc2ppipi(Lc2pXX):
         h1_h2_M = self.val("h1_h2_M")
         # Require pi+pi- invariant mass outside KS window
         ks = h1_h2_M < 480. or h1_h2_M > 520.
-        return ks
+        doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
+        vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
+        return ks and doca and vertex
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
@@ -235,5 +239,53 @@ class Lc2ppipi(Lc2pXX):
         h1 = self.val("h1_ProbNNpi") > 0.7
         h2 = self.val("h2_ProbNNpi") > 0.7
         probnn = proton and h1 and h2
+        return probnn
+
+
+# The DOCAMAX cut kills the signal for both modes
+# The distribution is much broader, for some reason
+class Lc2pKSLL(Lc2pXX):
+    """Wrapper class for Lc to pKS (long-long KS to pipi) decay ntuples."""
+    mode = config.pKSLL
+    shapes_preselection = ("DGS", "EXP")
+    shapes_postselection = ("DGS", "EXP")
+    def __init__(self, name, polarity, year):
+        """Initialiser for a new TChain. See Lc2pXX.__init__"""
+        log.info("Initialising Lc2pKSLL")
+        super(Lc2pKSLL, self).__init__(name, polarity, year)
+
+    def passes_specific_offline_cuts(self):
+        """True if current event passes mode-specific selection criteria."""
+        return True
+
+    def passes_pid_cuts(self):
+        """True if current event passes mode-specific PID criteria."""
+        proton = self.val("proton_ProbNNp") > 0.25
+        h1 = self.val("h1_ProbNNpi") > 0.3
+        h2 = self.val("h2_ProbNNpi") > 0.3
+        probnn = proton and (h1 or h2)
+        return probnn
+
+
+class Lc2pKSDD(Lc2pXX):
+    """Wrapper class for Lc to pKS (down-down KS to pipi) decay ntuples."""
+    mode = config.pKSDD
+    shapes_preselection = ("DGS", "EXP")
+    shapes_postselection = ("DGS", "EXP")
+    def __init__(self, name, polarity, year):
+        """Initialiser for a new TChain. See Lc2pXX.__init__"""
+        log.info("Initialising Lc2pKSDD")
+        super(Lc2pKSDD, self).__init__(name, polarity, year)
+
+    def passes_specific_offline_cuts(self):
+        """True if current event passes mode-specific selection criteria."""
+        return True
+
+    def passes_pid_cuts(self):
+        """True if current event passes mode-specific PID criteria."""
+        proton = self.val("proton_ProbNNp") > 0.25
+        h1 = self.val("h1_ProbNNpi") > 0.3
+        h2 = self.val("h2_ProbNNpi") > 0.3
+        probnn = proton and (h1 or h2)
         return probnn
 
