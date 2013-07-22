@@ -60,6 +60,25 @@ def ntuple_path(polarity, year, mc, mode=None):
     return path
 
 
+def selected_path(mode, polarity, year):
+    """Return the path to an ntuple containing only selected candidates.
+
+    Keyword arguments:
+    mode -- One of lc2pxx.config.modes, only required if mc=True
+    polarity -- One of lc2pxx.config.polarities
+    year -- One of lc2pxx.config.years
+    """
+    if polarity is config.magboth:
+        log.warning("Cannot return path for MagBoth polarity")
+        return None
+
+    base = "{0}/selected-{1}.root"
+    meta_string = "{0}-{1}-{2}-{3}".format(
+        mode, year, config.stripping_years[year], polarity
+    )
+    return base.format(config.output_dir, meta_string)
+
+
 def get_ntuple(mode, polarity, year, mc=False, mc_type=None):
     """Return a TChain for the specified mode and polarity.
 
@@ -95,6 +114,37 @@ def get_ntuple(mode, polarity, year, mc=False, mc_type=None):
         ntuple.add(ntuple_path(config.magup, year, mc, mode))
     if polarity in (config.magdown, config.magboth):
         ntuple.add(ntuple_path(config.magdown, year, mc, mode))
+
+    return ntuple
+
+
+def get_selected(mode, polarity, year):
+    """Return an Lc2pXX instance of selected candidates.
+
+    The selected ntuple should only contain candidates which pass the full
+    selection.
+    Keyword arguments:
+    mode -- One of lcp2xx.config.modes
+    polarity -- One of lc2pxx.config.polarities
+    year -- One of lc2pxx.config.years
+    """
+    log.info("Retrieving selected ntuple for {0} {1} {2}".format(
+        year, mode, polarity
+    ))
+
+    tree_name = "DecayTree"
+
+    klass = getattr(Lc2pXX, "Lc2{0}".format(mode))
+    ntuple = klass(tree_name, polarity, year)
+
+    if polarity in (config.magup, config.magboth):
+        ntuple.add("{0}/selected-{1}.root".format(
+            config.output_dir, ntuple
+        ))
+    if polarity in (config.magdown, config.magboth):
+        ntuple.add("{0}/selected-{1}.root".format(
+            config.output_dir, ntuple
+        ))
 
     return ntuple
 
