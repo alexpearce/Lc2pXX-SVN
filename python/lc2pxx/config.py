@@ -117,34 +117,10 @@ output_dir = project_dir + "/output"
 _hostname = platform.node()
 use_scratch = _hostname.startswith("pclbral05")
 
-# Cut strings
-# Triggers
-sep = ["_", ""][stripping_years[2011] == "17b"]
-_trigger_l0 = "mu{0}L0MuonDecision_TOS".format(sep)
-_trigger_hlt1 = "mu{0}Hlt1TrackMuonDecision_TOS".format(sep)
-_trigger_hlt2 = "||".join([
-    "Lambdab{0}Hlt2TopoMu2BodyBBDTDecision_TOS".format(sep),
-    "Lambdab{0}Hlt2TopoMu3BodyBBDTDecision_TOS".format(sep),
-    "Lambdab{0}Hlt2TopoMu4BodyBBDTDecision_TOS".format(sep),
-])
-trigger_requirements = "({0})&&({1})&&({2})".format(
-    _trigger_l0, _trigger_hlt1, _trigger_hlt2
-)
 # Lc mass window
 lc_m_low = 2220
 lc_m_high = 2360
 lc_m_window = "({0} < Lambdac_M) && (Lambdac_M < {1})".format(
     lc_m_low, lc_m_high
 )
-# Kinematic vetoes to match PID calibration samples
-kinematic_vetoes = "&&".join([
-    "2e3 < mu_P && mu_P < 1e5",
-    "1.5 < mu_ETA && mu_ETA < 5",
-    "2e3 < proton_P && proton_P < 1e5",
-    "1.5 < proton_ETA && proton_ETA < 5",
-    "2e3 < h1_P && h1_P < 1e5",
-    "1.5 < h1_ETA && h1_ETA < 5",
-    "2e3 < h2_P && h2_P < 1e5",
-    "1.5 < h2_ETA && h2_ETA < 5"
-])
 

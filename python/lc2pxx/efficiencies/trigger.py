@@ -13,13 +13,12 @@ def efficiency(mode, polarity, year):
         No. of triggered candidates / No. of reconstructed candidates.
     Candidates are truth matched.
     """
-    truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
-    tos_selection = "({0}) && ({1})".format(
-        truth_matching, config.trigger_requirements
-    )
-
     reco_ntuple = ntuples.get_ntuple(
         mode, polarity, year, mc=True, mc_type=config.mc_cheated
+    )
+    truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
+    tos_selection = "({0}) && ({1})".format(
+        truth_matching, reco_ntuple.trigger_requirements
     )
     num_pre = reco_ntuple.GetEntries(truth_matching)
     num_tos = reco_ntuple.GetEntries(tos_selection)
@@ -34,13 +33,12 @@ def efficiency_post_stripping(mode, polarity, year):
     candidates with respect to stripped candidates, rather than
     reconstructed candidates.
     """
-    truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
-    tos_selection = "({0}) && ({1})".format(
-        truth_matching, config.trigger_requirements
-    )
-
     reco_ntuple = ntuples.get_ntuple(
         mode, polarity, year, mc=True, mc_type=config.mc_stripped
+    )
+    truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
+    tos_selection = "({0}) && ({1})".format(
+        truth_matching, reco_ntuple.trigger_requirements
     )
     num_pre = reco_ntuple.GetEntries(truth_matching)
     num_tos = reco_ntuple.GetEntries(tos_selection)

@@ -255,12 +255,9 @@ def create_metatree(ntuple):
 
     # Make sure the branches we need are active
     ntuple.activate_selection_branches()
-    # This must match the conditions in Lc2pXX.passes_trigger and 
-    # Lc2pXX.passes_preselection
-    selection = "({0}) && ({1}) && ({2})".format(
-        config.trigger_requirements,
-        config.lc_m_window,
-        config.kinematic_vetoes
+    selection = "({0}) && ({1})".format(
+        ntuple.trigger_requirements,
+        ntuple.preselection
     )
     # Generate sWeights
     with ntuple.copy_selected(selection) as nt:
@@ -303,6 +300,7 @@ def create_metatree(ntuple):
     ntuple.activate_branches(mom_branches, append=True)
 
     # Fill the ouput tree
+    print "Filling meta friend tree"
     for entry in ntuple:
         lc_m[0] = ntuple.val("Lambdac_M")
         random[0] = generator.Rndm()

@@ -4,6 +4,18 @@ from lc2pxx import config, utilities, Ntuple
 
 class Lc2pXX(Ntuple.Ntuple):
     """Ntuple representing all Lambda_c to proton h^+ h^- decays."""
+    # Cut string of triggers used in the analysis
+    # Equal across all modes
+    trigger_requirements = "({0})&&({1})&&({2})".format(
+        "mu_L0MuonDecision_TOS",
+        "mu_Hlt1TrackMuonDecision_TOS",
+        "||".join([
+            "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
+            "Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS",
+            "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"
+        ])
+    )
+
     def __init__(self, name, polarity, year):
         """Initialiser for a new Lc2pXX object.
 
@@ -58,25 +70,39 @@ class Lc2pXX(Ntuple.Ntuple):
                 self.val("Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"))
         return l0 and hlt1 and hlt2
 
-    # Any selection here must be passed as a string in
-    # ntuples.create_metatree, so if you edit this, edit that
+    def passes_specific_preselection(self):
+        """Return True if current event passes mode-specific preselection.
+
+        To be implemented by child classes
+        """
+        log.error("Base Lc2pXX.passes_specific_offline_cuts called.")
+        return True
+
+    # This string should contain the equivalent cuts to the
+    # passes_preselection method.
+    # This should be overridden by child classes, appending the parent, e.g.
+    #     class Lc2pYZ(Lc2pXX):
+    #         preselection = "(0) && (cut<5)".format(Lc2pXX.preselection)
+    # It is used in the creation of the meta friend tree.
+    preselection = "&&".join([
+        config.lc_m_window,
+        "5e3 < proton_P && proton_P < 1e5",
+        "2.0 < proton_ETA && proton_ETA < 4.5"
+    ])
     def passes_preselection(self):
         """Return True if current event passes preselection cuts."""
         # Lc mass window cut prevents poor fitting due to outliers
         lc_mass = config.lc_m_low < self.val("Lambdac_M") < config.lc_m_high
-        # All final state momenta 2 < p < 100 GeV, eta 1.5 < n < 5
-        # These are the limits impose on the PID calibration samples,
+        # Proton momenta 5 < p < 100 GeV, eta 2 < n < 4.5
+        # These are the limits imposed on the PID calibration samples,
         # so we must implement them too
-        mu_veto = 2e3 < self.val("mu_P") < 1e5
-        mu_veto = mu_veto and 1.5 < self.val("mu_ETA") < 5
-        proton_veto = 2e3 < self.val("proton_P") < 1e5
-        proton_veto = proton_veto and 1.5 < self.val("proton_ETA") < 5
-        h1_veto = 2e3 < self.val("h1_P") < 1e5
-        h1_veto = h1_veto and 1.5 < self.val("h1_ETA") < 5
-        h2_veto = 2e3 < self.val("h2_P") < 1e5
-        h2_veto = h2_veto and 1.5 < self.val("h2_ETA") < 5
-        vetoes = mu_veto and h1_veto and h2_veto and proton_veto
-        return lc_mass and vetoes
+        proton_veto = 5e3 < self.val("proton_P") < 1e5
+        proton_veto = proton_veto and 2.0 < self.val("proton_ETA") < 4.5
+        return (
+            lc_mass and
+            proton_veto and
+            self.passes_specific_preselection()
+        )
 
     def passes_offline_cuts(self):
         """Return True if the current event passes the offline selection
@@ -174,6 +200,24 @@ class Lc2pKpi(Lc2pXX):
         log.info("Initialising Lc2pKpi")
         super(Lc2pKpi, self).__init__(name, polarity, year)
 
+    preselection = "({0}) && ({1})".format(
+        Lc2pXX.preselection,
+        "&&".join([
+            "5e3 < h1_P && h1_P < 1e5",
+            "2.0 < h1_ETA && h1_ETA < 4.5",
+            "5e3 < h2_P && h2_P < 1e5",
+            "2.0 < h2_ETA && h2_ETA < 4.5"
+        ])
+    )
+    def passes_specific_preselection(self):
+        """Return True if current event passes mode-specific preselection.
+        """
+        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
+        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
+        return h1_veto and h2_veto
+
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
         doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
@@ -198,6 +242,24 @@ class Lc2pKK(Lc2pXX):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKK")
         super(Lc2pKK, self).__init__(name, polarity, year)
+
+    preselection = "({0}) && ({1})".format(
+        Lc2pXX.preselection,
+        "&&".join([
+            "5e3 < h1_P && h1_P < 1e5",
+            "2.0 < h1_ETA && h1_ETA < 4.5",
+            "5e3 < h2_P && h2_P < 1e5",
+            "2.0 < h2_ETA && h2_ETA < 4.5"
+        ])
+    )
+    def passes_specific_preselection(self):
+        """Return True if current event passes mode-specific preselection.
+        """
+        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
+        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
+        return h1_veto and h2_veto
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
@@ -224,6 +286,24 @@ class Lc2ppipi(Lc2pXX):
         log.info("Initialising Lc2ppipi")
         super(Lc2ppipi, self).__init__(name, polarity, year)
 
+    preselection = "({0}) && ({1})".format(
+        Lc2pXX.preselection,
+        "&&".join([
+            "5e3 < h1_P && h1_P < 1e5",
+            "2.0 < h1_ETA && h1_ETA < 4.5",
+            "5e3 < h2_P && h2_P < 1e5",
+            "2.0 < h2_ETA && h2_ETA < 4.5"
+        ])
+    )
+    def passes_specific_preselection(self):
+        """Return True if current event passes mode-specific preselection.
+        """
+        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
+        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
+        return h1_veto and h2_veto
+
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
         h1_h2_M = self.val("h1_h2_M")
@@ -243,7 +323,8 @@ class Lc2ppipi(Lc2pXX):
 
 
 # The DOCAMAX cut kills the signal for both modes
-# The distribution is much broader, for some reason
+# The distribution is much broader as the KS track has to be extrapolated
+# a large distance to the Lambda_c vertex
 class Lc2pKSLL(Lc2pXX):
     """Wrapper class for Lc to pKS (long-long KS to pipi) decay ntuples."""
     mode = config.pKSLL
@@ -253,6 +334,26 @@ class Lc2pKSLL(Lc2pXX):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKSLL")
         super(Lc2pKSLL, self).__init__(name, polarity, year)
+
+    # Although there are no offline PID cuts on the pions, there are
+    # still the stripping DLL cuts, and these still need calibration
+    preselection = "({0}) && ({1})".format(
+        Lc2pXX.preselection,
+        "&&".join([
+            "5e3 < h1_P && h1_P < 1e5",
+            "2.0 < h1_ETA && h1_ETA < 4.5",
+            "5e3 < h2_P && h2_P < 1e5",
+            "2.0 < h2_ETA && h2_ETA < 4.5"
+        ])
+    )
+    def passes_specific_preselection(self):
+        """Return True if current event passes mode-specific preselection.
+        """
+        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
+        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
+        return h1_veto and h2_veto
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
@@ -276,6 +377,28 @@ class Lc2pKSDD(Lc2pXX):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKSDD")
         super(Lc2pKSDD, self).__init__(name, polarity, year)
+
+    # Although there are no offline PID cuts on the pions, there are
+    # still the stripping DLL cuts, and these still need calibration
+    preselection = "({0}) && ({1})".format(
+        Lc2pXX.preselection,
+        "&&".join([
+            "5e3 < h1_P && h1_P < 1e5",
+            "2.0 < h1_ETA && h1_ETA < 4.5",
+            "5e3 < h2_P && h2_P < 1e5",
+            "2.0 < h2_ETA && h2_ETA < 4.5"
+        ])
+    )
+    def passes_specific_preselection(self):
+        """Return True if current event passes mode-specific preselection.
+
+        To be implemented by child classes
+        """
+        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
+        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
+        return h1_veto and h2_veto
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
