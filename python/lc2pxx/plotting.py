@@ -240,7 +240,6 @@ def plot_fit(workspace, pdfs, var, bins=70, pull=True):
         ROOT.RooFit.LineColor(ROOT.kBlue + 1)
     )
 
-    print "idx: ", idx
     legend = ROOT.TLegend(0.5, 0.9, 0.175, 0.8 - (0.1*idx))
     legend.SetTextSize(16)
     legend.AddEntry(frame.findObject("theData"), "Data", "ep")
