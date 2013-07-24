@@ -136,15 +136,9 @@ def get_selected(mode, polarity, year):
 
     klass = getattr(Lc2pXX, "Lc2{0}".format(mode))
     ntuple = klass(tree_name, polarity, year)
-
-    if polarity in (config.magup, config.magboth):
-        ntuple.add("{0}/selected-{1}.root".format(
-            config.output_dir, ntuple
-        ))
-    if polarity in (config.magdown, config.magboth):
-        ntuple.add("{0}/selected-{1}.root".format(
-            config.output_dir, ntuple
-        ))
+    ntuple.add("{0}/selected-{1}.root".format(
+        config.output_dir, ntuple
+    ))
 
     return ntuple
 
