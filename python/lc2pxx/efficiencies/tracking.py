@@ -114,34 +114,52 @@ def efficiency_from_spectrum(spectrum, tracking_table):
 
 
 def smeared_efficiency_from_spectrum(spectrum, tracking_table):
-    """Explain eeeeverything."""
+    """Return the efficiency obtained for toy experiments.
+
+    For each toy, the efficiency in each bin is calculated as the average
+    of of the smeared efficiencies per event in that bin, and the total
+    efficiency across the spectrum is the average of these.
+    The error on the efficiency is the average RMS of the bin efficiencies
+    across all toys
+        variance = <mean eff> - <mean eff^2>
+        std. dev. = sqrt(variance)
+    """
     bins_x = spectrum.GetNbinsX()
     bins_y = spectrum.GetNbinsY()
     total_ratio = 0.
     total_ratio2 = 0.
     # Random number generator
     rand = ROOT.TRandom3()
-    num_toys = 10
-    print "Generating smeared tracking efficiency toys"
-    for seed in range(num_toys):
-        utilities.progress_bar(seed/float(num_toys))
-        events = 0
-        mean_ratio = 0.
+    toys = 30
+    print "Generating {0} smeared tracking efficiency toys".format(toys)
+    for toy in range(toys):
+        utilities.progress_bar(toy/float(toys))
+        # Average of the smeared efficiencies
+        mean = 0.
+        # Number of entries in the spectrum
+        entries = 0
         for i in range(bins_x + 1):
             for j in range(bins_y + 1):
+                # Calculate efficiency and error
                 p = spectrum.GetXaxis().GetBinCenter(i)
                 eta = spectrum.GetYaxis().GetBinCenter(j)
-                weight = spectrum.GetBinContent(i, j)
-                for w in range(int(weight)):
-                    events += 1
-                    eff_ratio = efficiency_for_p_eta(p, eta, tracking_table)
-                    ratio = eff_ratio.nominal_value
-                    error = eff_ratio.std_dev
-                    rand.SetSeed(seed + (int(abs(ratio - 1.0)*1e5)))
-                    smeared_ratio = rand.Gaus(ratio, error)
-                    mean_ratio = (smeared_ratio+mean_ratio*(events-1))/events
-        total_ratio = (mean_ratio + (total_ratio*seed))/(seed + 1)
-        total_ratio2 = (mean_ratio**2 + (total_ratio2*seed))/(seed + 1)
+                # Sum of weights in the bin
+                bin_entries = spectrum.GetBinContent(i, j)
+                eff_ratio = efficiency_for_p_eta(p, eta, tracking_table)
+                ratio = eff_ratio.nominal_value
+                error = eff_ratio.std_dev
+                # Different seed per bin
+                rand.SetSeed(toy + (int(abs(ratio - 1.0)*1e5)))
+                # Loop over each entry in the bin, recalculating the mean
+                # efficiency by adding an efficiency smeared by it's error
+                for k in range(int(bin_entries)):
+                    entries += 1
+                    smeared = rand.Gaus(ratio, error)
+                    mean = (smeared + mean*(entries - 1))/entries
+        # Recalculate the total efficiency so far by adding the mean
+        # efficiency for the toy
+        total_ratio = (mean + (total_ratio*toy))/(toy + 1)
+        total_ratio2 = ((mean*mean) + (total_ratio2*toy))/(toy + 1)
     # Clear progress bar
     print
     return ufloat(
