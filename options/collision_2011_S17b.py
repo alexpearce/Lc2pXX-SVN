@@ -50,7 +50,8 @@ filter_template = FilterDesktop(
     Code="(MINTREE(ABSID=='Lambda_c+', ADMASS('Lambda_c+')) < 75*MeV)"
 )
 
-inputs_template = "Phys/{0}/Particles"
+# MDST appends /Particles to this, DST doesn't
+inputs_template = "Phys/{0}"
 decay_template = "[Lambda_b0 -> (^Lambda_c+ -> ^p+ ^{0} ^{1}) ^{2}]cc"
 mother_templates = {
     "Lambdab": "[Lambda_b0]cc: [Lambda_b0 -> (Lambda_c+ -> p+ {0} {1}) {2}]cc",
