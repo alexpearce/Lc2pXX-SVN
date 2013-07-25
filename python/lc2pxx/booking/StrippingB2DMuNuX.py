@@ -17,7 +17,18 @@ from GaudiConfUtils.ConfigurableGenerators import FilterDesktop, CombineParticle
 from PhysSelPython.Wrappers import Selection, DataOnDemand
 from StrippingConf.StrippingLine import StrippingLine
 from StrippingUtils.Utils import LineBuilder
-from StandardParticles import StdLoosePions, StdLooseMuons, StdLooseKaons, StdLooseProtons, StdNoPIDsPions, StdLooseMergedPi0,StdLooseResolvedPi0
+from StandardParticles import (
+    StdLoosePions,
+    StdLooseMuons,
+    StdLooseKaons,
+    StdLooseProtons,
+    StdNoPIDsPions,
+    StdNoPIDsMuons,
+    StdNoPIDsKaons,
+    StdNoPIDsProtons,
+    StdLooseMergedPi0,
+    StdLooseResolvedPi0
+)
 
 __all__ = ('B2DMuNuXAllLinesConf',
            'makeb2DMuX',
@@ -175,6 +186,27 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
                                      self.selmuontight,
                                      "Hlt2SingleMuonDecision")
 
+        ############### MUON SELECTIONS NO PID ###################
+        self.selmuonNoPIDs = Selection( "MuNoPIDsfor" + name,
+                                  Algorithm = self._muonFilterNoPIDs(),
+                                  RequiredSelections = [StdNoPIDsMuons])
+
+        self.selmuonhighPTNoPIDs = Selection( "MuhighPTNoPIDsfor" + name,
+                                  Algorithm = FilterDesktop( Code = "(TRCHI2DOF < %(TRCHI2)s) & (PT>1.2*GeV) & (MIPCHI2DV(PRIMARY)> 9.0)" % self.__confdict__ ),
+                                  RequiredSelections = [self.selmuonNoPIDs])
+
+        self.selmuontightNoPIDs = Selection( "MutightNoPIDsfor" + name,
+                                  Algorithm = FilterDesktop( Code = "(MIPCHI2DV(PRIMARY)> 100)" ),
+                                  RequiredSelections = [self.selmuonhighPTNoPIDs])
+
+        self.selmuonnewNoPIDs = Selection( "MunewNoPIDsfor" + name,
+                                     Algorithm = FilterDesktop( Code = "(MIPCHI2DV(PRIMARY)> 9.0) & (TRCHI2DOF < %(TRCHI2)s)" % self.__confdict__ ),
+                                     RequiredSelections = [self.selmuonNoPIDs])
+
+        self.selmuonTOSNoPIDs = TOSFilter( "MuTOSNoPIDs" + name,
+                                     self.selmuontightNoPIDs,
+                                     "Hlt2SingleMuonDecision")
+
         ############### KAON AND PION SELECTIONS ################
         
         self.selKaon = Selection( "Kfor" + name,
@@ -201,6 +233,33 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
         self.selpion_fakes = Selection( "Pion_fakes_for" + name,
                                         Algorithm = self._pionFilter_fakes(),
                                         RequiredSelections = [StdLoosePions])
+        
+        ############### KAON AND PION SELECTIONS NO PID ################
+        
+        self.selKaonNoPIDs = Selection( "KNoPIDsfor" + name,
+                                  Algorithm = self._kaonFilterNoPIDs(),
+                                  RequiredSelections = [StdNoPIDsKaons])
+        
+        self.selPionNoPIDs = Selection( "PiNoPIDsfor" + name,
+                                  Algorithm = self._pionFilterNoPIDs(),
+                                  RequiredSelections = [StdNoPIDsPions])
+
+        self.selPionTightNoPIDs = Selection( "PiTightNoPIDsfor" + name,
+                                       Algorithm = FilterDesktop( Code = "(TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                                                                  "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s))" % self.__confdict__ ),
+                                       RequiredSelections = [StdNoPIDsPions])
+        
+        self.selPionlooseNoPIDs = Selection( "PilooseNoPIDsfor" + name,
+                                       Algorithm = self._pionlooseFilterNoPIDs(),
+                                       RequiredSelections = [StdNoPIDsPions])
+        
+        self.selKaonlooseNoPIDs = Selection( "KlooseNoPIDsfor" + name,
+                                       Algorithm = self._kaonlooseFilterNoPIDs(),
+                                       RequiredSelections = [StdNoPIDsKaons])
+
+        self.selpion_fakesNoPIDs = Selection( "Pion_fakesNoPIDs_for" + name,
+                                        Algorithm = self._pionFilter_fakesNoPIDs(),
+                                        RequiredSelections = [StdNoPIDsPions])
         
         ############## PI0 SELECTIONS ############################
         
@@ -413,6 +472,22 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
         self.sellambdacDCS = Selection( "Lc2PKPiDCSfor" + name,
                                      Algorithm = self._Lc2PKPiDCSFilter(),
                                      RequiredSelections = [self.selKaon, self.selPion, StdLooseProtons ] )
+
+        #################### Lambda_c+ -> X SELECTIONS NO PID #########################
+
+        self.selLc2pKKNoPIDs = Selection( "Lc2pKKNoPIDsfor" + name,Algorithm = self._Lc2pKKFilterNoPIDs(),
+                                    RequiredSelections = [self.selKaonNoPIDs, StdNoPIDsProtons])
+
+        self.selLc2pPiPiNoPIDs = Selection( "Lc2pPiPiNoPIDsfor" + name,Algorithm = self._Lc2pPiPiFilterNoPIDs(),
+                                      RequiredSelections = [self.selPionTightNoPIDs, StdNoPIDsProtons])
+        
+        self.sellambdacNoPIDs = Selection( "Lc2PKPiNoPIDsfor" + name,
+                                     Algorithm = self._Lc2PKPiFilterNoPIDs(),
+                                     RequiredSelections = [self.selKaonNoPIDs, self.selPionNoPIDs, StdNoPIDsProtons ] )
+        
+        self.sellambdacDCSNoPIDs = Selection( "Lc2PKPiDCSNoPIDsfor" + name,
+                                     Algorithm = self._Lc2PKPiDCSFilterNoPIDs(),
+                                     RequiredSelections = [self.selKaonNoPIDs, self.selPionNoPIDs, StdNoPIDsProtons ] )
 
         
         ################ MAKE THE B CANDIDATES #################################
@@ -638,6 +713,24 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
         self.selb2Lc2pKKMuX = makeb2DMuX('b2Lc2pKKMuX' + name, DecayDescriptors = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc'],
                                            MuSel = self.selmuonnew, DSel = self.selLc2pKK,
                                            BVCHI2DOF = config['BVCHI2DOF'],BDIRA = config['BDIRA'],DZ = config['DZ'])
+
+        ############## Lambda_b0 -> MU X Lambda_c -> X NO PID ############################
+
+        self.selb2LcMuXNoPIDs = makeb2DMuX('b2LcMuXNoPIDs' + name, DecayDescriptors = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc'],
+                                     MuSel = self.selmuonnewNoPIDs, DSel = self.sellambdacNoPIDs,
+                                     BVCHI2DOF = config['BVCHI2DOF'],BDIRA = config['BDIRA'],DZ = config['DZ'])     
+
+        self.selb2LcDCSMuXNoPIDs = makeb2DMuX('b2LcDCSMuXNoPIDs' + name, DecayDescriptors = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc'],
+                                        MuSel = self.selmuonnewNoPIDs, DSel = self.sellambdacDCSNoPIDs,
+                                        BVCHI2DOF = config['BVCHI2DOF'],BDIRA = config['BDIRA'],DZ = config['DZ'])
+
+        self.selb2Lc2pPiPiMuXNoPIDs = makeb2DMuX('b2Lc2pPiPiMuXNoPIDs' + name, DecayDescriptors = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc'],
+                                           MuSel = self.selmuonnewNoPIDs, DSel = self.selLc2pPiPiNoPIDs,
+                                           BVCHI2DOF = config['BVCHI2DOF'],BDIRA = config['BDIRA'],DZ = config['DZ'])
+
+        self.selb2Lc2pKKMuXNoPIDs = makeb2DMuX('b2Lc2pKKMuXNoPIDs' + name, DecayDescriptors = [ '[Lambda_b0 -> Lambda_c+ mu-]cc', '[Lambda_b0 -> Lambda_c+ mu+]cc'],
+                                           MuSel = self.selmuonnewNoPIDs, DSel = self.selLc2pKKNoPIDs,
+                                           BVCHI2DOF = config['BVCHI2DOF'],BDIRA = config['BDIRA'],DZ = config['DZ'])
         
         ################# DECLARE THE STRIPPING LINES #################################
 
@@ -698,10 +791,14 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
         self.b2MuXLc2L0DDKLine = StrippingLine('b2MuXLc2L0DDK' + name + 'Line', prescale = 1, selection = self.selb2Lc2L0DDKMuX)
 
         ########## Lambda_c+ -> p HH 
-        self.b2LcMuXLine = StrippingLine('b2LcMuX' + name + 'Line', prescale = 1, selection = self.selb2LcMuX)
-        self.b2LcDCSMuXLine = StrippingLine('b2LcDCSMuX' + name + 'Line', prescale = 1, selection = self.selb2LcDCSMuX)
-        self.b2Lc2pPiPiMuXLine = StrippingLine('b2Lc2pPiPiMuX' + name + 'Line', prescale = 1, selection = self.selb2Lc2pPiPiMuX)
-        self.b2Lc2pKKMuXLine = StrippingLine('b2Lc2pKKMuX' + name + 'Line', prescale = 1, selection = self.selb2Lc2pKKMuX)
+        # self.b2LcMuXLine = StrippingLine('b2LcMuX' + name + 'Line', prescale = 1, selection = self.selb2LcMuX)
+        # self.b2LcDCSMuXLine = StrippingLine('b2LcDCSMuX' + name + 'Line', prescale = 1, selection = self.selb2LcDCSMuX)
+        # self.b2Lc2pPiPiMuXLine = StrippingLine('b2Lc2pPiPiMuX' + name + 'Line', prescale = 1, selection = self.selb2Lc2pPiPiMuX)
+        # self.b2Lc2pKKMuXLine = StrippingLine('b2Lc2pKKMuX' + name + 'Line', prescale = 1, selection = self.selb2Lc2pKKMuX)
+        self.b2LcMuXLine = StrippingLine('b2LcMuX' + name + 'Line', prescale = 1, selection = self.selb2LcMuXNoPIDs)
+        self.b2LcDCSMuXLine = StrippingLine('b2LcDCSMuX' + name + 'Line', prescale = 1, selection = self.selb2LcDCSMuXNoPIDs)
+        self.b2Lc2pPiPiMuXLine = StrippingLine('b2Lc2pPiPiMuX' + name + 'Line', prescale = 1, selection = self.selb2Lc2pPiPiMuXNoPIDs)
+        self.b2Lc2pKKMuXLine = StrippingLine('b2Lc2pKKMuX' + name + 'Line', prescale = 1, selection = self.selb2Lc2pKKMuXNoPIDs)
         
         ############## REGISTER THE LINES #####################
 
@@ -798,6 +895,40 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
         _pil_fakes = FilterDesktop( Code = _code )
         return _pil_fakes
 
+    def _muonFilterNoPIDs( self ):
+        _code = "(PT > %(MuonPT)s *MeV) & (P> 3.0*GeV) & (TRCHI2DOF< %(TRCHI2Loose)s) & (MIPCHI2DV(PRIMARY)> %(MuonIPCHI2)s)" % self.__confdict__
+        _mu = FilterDesktop( Code = _code )
+        return _mu        
+
+    def _pionFilterNoPIDs( self ):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                   "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__
+        _pi = FilterDesktop( Code = _code )
+        return _pi
+
+    def _kaonFilterNoPIDs( self ):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                   "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__
+        _ka = FilterDesktop( Code = _code )
+        return _ka 
+  
+    def _kaonlooseFilterNoPIDs( self ):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2Loose)s)" % self.__confdict__
+        _kal = FilterDesktop( Code = _code )
+        return _kal 
+    
+    def _pionlooseFilterNoPIDs( self ):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2Loose)s)" % self.__confdict__
+        _pil = FilterDesktop( Code = _code )
+        return _pil
+    
+    def _pionFilter_fakesNoPIDs( self ):
+        _code = "  (TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
+                "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2Loose)s)" % self.__confdict__
+        _pil_fakes = FilterDesktop( Code = _code )
+        return _pil_fakes
     
     def _Pi0ResolvedFilter( self):
         _code = "(PT> %(Pi0PtMin)s *MeV) & (P> %(Pi0PMin)s *MeV) & (CHILD(CL,1)> %(PhotonCL)s) & (CHILD(CL,2)> %(PhotonCL)s)" % self.__confdict__
@@ -1041,10 +1172,36 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
                                     MotherCut = _motherCut)                                                         
         return _lambdac
 
+    def _Lc2PKPiFilterNoPIDs( self ):
+        _decayDescriptors = [ '[Lambda_c+ -> K- p+ pi+]cc' ]
+        _daughtersCuts = {  "p+" :  "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV) "\
+                                    "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__}
+        _combinationCut = "(ADAMASS('Lambda_c+') < %(DsAMassWin)s *MeV) & (ACHILD(PT,1)+ACHILD(PT,2)+ACHILD(PT,3) > 1800.*MeV) & (ADOCACHI2CUT( %(DDocaChi2Max)s, ''))" % self.__confdict__
+        _motherCut = "(ADMASS('Lambda_c+') < %(DsMassWin)s *MeV) & (VFASPF(VCHI2/VDOF) < %(DsVCHI2DOF)s) " \
+                            "& (BPVVDCHI2 > %(DsFDCHI2)s) & (SUMTREE( PT,  ISBASIC )>1800.*MeV) & (BPVDIRA> %(DsDIRA)s)"  % self.__confdict__
+        _lambdac = CombineParticles( DecayDescriptors = _decayDescriptors,
+                                    DaughtersCuts = _daughtersCuts,
+                                    CombinationCut = _combinationCut,
+                                    MotherCut = _motherCut)                                                         
+        return _lambdac
+
     def _Lc2PKPiDCSFilter( self ):
         _decayDescriptors = [ '[Lambda_c+ -> K+ p+ pi-]cc' ]
         _daughtersCuts = {  "p+" :  "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV) "\
                                     "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)  &  (PIDp> %(KaonPIDK)s) & (PIDp-PIDK>1.0e-10)" % self.__confdict__}
+        _combinationCut = "(ADAMASS('Lambda_c+') < %(DsAMassWin)s *MeV) & (ACHILD(PT,1)+ACHILD(PT,2)+ACHILD(PT,3) > 1800.*MeV) & (ADOCACHI2CUT( %(DDocaChi2Max)s, ''))" % self.__confdict__
+        _motherCut = "(ADMASS('Lambda_c+') < %(DsMassWin)s *MeV) & (VFASPF(VCHI2/VDOF) < %(DsVCHI2DOF)s) " \
+                            "& (BPVVDCHI2 > %(DsFDCHI2)s) & (SUMTREE( PT,  ISBASIC )>1800.*MeV) & (BPVDIRA> %(DsDIRA)s)"  % self.__confdict__
+        _lambdac = CombineParticles( DecayDescriptors = _decayDescriptors,
+                                    DaughtersCuts = _daughtersCuts,
+                                    CombinationCut = _combinationCut,
+                                    MotherCut = _motherCut)                                                         
+        return _lambdac
+    
+    def _Lc2PKPiDCSFilterNoPIDs( self ):
+        _decayDescriptors = [ '[Lambda_c+ -> K+ p+ pi-]cc' ]
+        _daughtersCuts = {  "p+" :  "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV) "\
+                                    "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__}
         _combinationCut = "(ADAMASS('Lambda_c+') < %(DsAMassWin)s *MeV) & (ACHILD(PT,1)+ACHILD(PT,2)+ACHILD(PT,3) > 1800.*MeV) & (ADOCACHI2CUT( %(DDocaChi2Max)s, ''))" % self.__confdict__
         _motherCut = "(ADMASS('Lambda_c+') < %(DsMassWin)s *MeV) & (VFASPF(VCHI2/VDOF) < %(DsVCHI2DOF)s) " \
                             "& (BPVVDCHI2 > %(DsFDCHI2)s) & (SUMTREE( PT,  ISBASIC )>1800.*MeV) & (BPVDIRA> %(DsDIRA)s)"  % self.__confdict__
@@ -1197,10 +1354,36 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
                                      MotherCut = _motherCut)                                                         
         return _lambdac
     
+    def  _Lc2pPiPiFilterNoPIDs( self ):
+        _decayDescriptors = [ '[Lambda_c+ -> p+ pi- pi+]cc' ]
+        _daughtersCuts = {  "p+" :  "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV)"\
+                            "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__ }
+        _combinationCut = "(ADAMASS('Lambda_c+') < %(DsAMassWin)s *MeV) & (ACHILD(PT,1)+ACHILD(PT,2)+ACHILD(PT,3) > 1800.*MeV) & (ADOCACHI2CUT( %(DDocaChi2Max)s, ''))" % self.__confdict__
+        _motherCut = "(ADMASS('Lambda_c+') < %(DsMassWin)s *MeV) & (VFASPF(VCHI2/VDOF) < %(DsVCHI2DOF)s) " \
+                     "& (BPVVDCHI2 > %(DsFDCHI2)s) & (SUMTREE( PT,  ISBASIC )>1800.*MeV) & (BPVDIRA> %(DsDIRA)s)"  % self.__confdict__
+        _lambdac = CombineParticles( DecayDescriptors = _decayDescriptors,
+                                     DaughtersCuts = _daughtersCuts,
+                                     CombinationCut = _combinationCut,
+                                     MotherCut = _motherCut)                                                         
+        return _lambdac
+    
     def  _Lc2pKKFilter( self ):
         _decayDescriptors = [ '[Lambda_c+ -> p+ K- K+]cc' ]
         _daughtersCuts = {  "p+" :  "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV) "\
                             "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)  &  (PIDp> %(KaonPIDK)s) & (PIDp-PIDK>1.0e-10)" % self.__confdict__}
+        _combinationCut = "(ADAMASS('Lambda_c+') < %(DsAMassWin)s *MeV) & (ACHILD(PT,1)+ACHILD(PT,2)+ACHILD(PT,3) > 1800.*MeV) & (ADOCACHI2CUT( %(DDocaChi2Max)s, ''))" % self.__confdict__
+        _motherCut = "(ADMASS('Lambda_c+') < %(DsMassWin)s *MeV) & (VFASPF(VCHI2/VDOF) < %(DsVCHI2DOF)s) " \
+                     "& (BPVVDCHI2 > %(DsFDCHI2)s) & (SUMTREE( PT,  ISBASIC )>1800.*MeV) & (BPVDIRA> %(DsDIRA)s)"  % self.__confdict__
+        _lambdac = CombineParticles( DecayDescriptors = _decayDescriptors,
+                                     DaughtersCuts = _daughtersCuts,
+                                     CombinationCut = _combinationCut,
+                                     MotherCut = _motherCut)                                                         
+        return _lambdac
+    
+    def  _Lc2pKKFilterNoPIDs( self ):
+        _decayDescriptors = [ '[Lambda_c+ -> p+ K- K+]cc' ]
+        _daughtersCuts = {  "p+" :  "(TRCHI2DOF < %(TRCHI2)s) & (PT > %(KPiPT)s *MeV) & (P>2.0*GeV) "\
+                            "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__}
         _combinationCut = "(ADAMASS('Lambda_c+') < %(DsAMassWin)s *MeV) & (ACHILD(PT,1)+ACHILD(PT,2)+ACHILD(PT,3) > 1800.*MeV) & (ADOCACHI2CUT( %(DDocaChi2Max)s, ''))" % self.__confdict__
         _motherCut = "(ADMASS('Lambda_c+') < %(DsMassWin)s *MeV) & (VFASPF(VCHI2/VDOF) < %(DsVCHI2DOF)s) " \
                      "& (BPVVDCHI2 > %(DsFDCHI2)s) & (SUMTREE( PT,  ISBASIC )>1800.*MeV) & (BPVDIRA> %(DsDIRA)s)"  % self.__confdict__
