@@ -115,7 +115,7 @@ project_dir = os.getcwd()
 output_dir = project_dir + "/output"
 
 _hostname = platform.node()
-use_scratch = _hostname.startswith("pclbral05")
+use_scratch = _hostname.startswith(("pclbral05", "apvm"))
 
 # Lc mass window
 lc_m_low = 2220
