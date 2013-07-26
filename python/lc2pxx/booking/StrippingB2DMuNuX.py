@@ -246,7 +246,7 @@ class B2DMuNuXAllLinesConf(LineBuilder) :
 
         self.selPionTightNoPIDs = Selection( "PiTightNoPIDsfor" + name,
                                        Algorithm = FilterDesktop( Code = "(TRCHI2DOF < %(TRCHI2)s) & (P>2.0*GeV) & (PT > %(KPiPT)s *MeV)"\
-                                                                  "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s))" % self.__confdict__ ),
+                                                                  "& (MIPCHI2DV(PRIMARY)> %(MINIPCHI2)s)" % self.__confdict__ ),
                                        RequiredSelections = [StdNoPIDsPions])
         
         self.selPionlooseNoPIDs = Selection( "PilooseNoPIDsfor" + name,
