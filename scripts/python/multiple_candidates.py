@@ -22,7 +22,9 @@ def multiple_candidates(mode, polarity, year, selection=True):
     # ordering
     n = ntuples.get_ntuple(mode, polarity, year)
     ntuples.add_metatree(n)
-    n.activate_selection_branches()
+    n.SetBranchStatus("*", 0)
+    if selection:
+        n.activate_selection_branches()
     n.activate_branches([
         "Lambdac_M",
         "totCandidates"
@@ -39,7 +41,6 @@ def multiple_candidates(mode, polarity, year, selection=True):
     total_cands = 0
     # List of per-event Lambda_c masses that pass full selection
     masses = []
-    # List 
     print "Calculating multiple candidates for", n
     for entry in n:
         if total_cands == 0:
@@ -53,7 +54,9 @@ def multiple_candidates(mode, polarity, year, selection=True):
         # +/- 18 MeV of the nominal Lambda_c mass
         lc_m = n.val("Lambdac_M")
         windowed = 2268. < lc_m < 2304.
-        if n.passes_selection() and windowed:
+        # If not selection, we don't need to check Lc2pxx.passes_selection
+        passes_selection = not selection or n.passes_selection()
+        if passes_selection and windowed:
             masses.append(lc_m)
             passing_cands += 1
         total_cands -= 1
@@ -69,5 +72,5 @@ def multiple_candidates(mode, polarity, year, selection=True):
 
 if __name__ == "__main__":
     for mode in config.modes:
-        multiple_candidates(mode, config.magboth, 2011)
+        multiple_candidates(mode, config.magboth, 2011, selection=True)
 

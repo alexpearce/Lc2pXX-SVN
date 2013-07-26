@@ -7,12 +7,12 @@ from lc2pxx import config, utilities, ntuples, fitting, plotting
 from lc2pxx.Ntuple import Ntuple
 
 def link_branches(source, destination, branches):
-    """Links branches to source to new branches in destination.
+    """Links branches from source to new branches in destination.
 
     This method does not activate branches in source, and it only links
     activated branches. This can be quite useful as it allows one to
-    activate the specific branches required, then pass the full list
-    of branches.
+    activate the specific branches required, then pass
+    source.GetListOfBranches().
     Keyword arguments:
     source -- Ntuple instance to retrieve branch references from
     destination -- TTree (or derived) instance to create branches on
@@ -69,13 +69,26 @@ def setup_analysis(mode, polarity, year):
             mass_var,
             bins=140
         )
+        c.SetName(w.GetName().replace("workspace", "canvas"))
         utilities.save_to_file("{0}/fits/sWeights-{1}.root".format(
             config.output_dir, n
         ), [w, c])
+        # Make sure the ntuple isn't holding to any old references
+        n.ResetBranchAddresses()
         ntuples.add_metatree(n)
-    n.activate_selection_branches()
     # Additional helpful branches to have
-    n.activate_branches([
+    friend_branches = [
+        b.GetName()
+        for f in n.GetListOfFriends()
+        for b in f.GetTree().GetListOfBranches()
+    ]
+    more_branches = [
+        "Lambdac_P",
+        "Lambdac_PX",
+        "Lambdac_PY",
+        "Lambdac_PZ",
+        "Lambdac_PE",
+        "Lambdac_ETA",
         "proton_PX",
         "proton_PY",
         "proton_PZ",
@@ -92,7 +105,9 @@ def setup_analysis(mode, polarity, year):
         "nCandidate",
         "Polarity",
         "nTracks"
-    ], append=True)
+    ]
+    n.activate_selection_branches()
+    n.activate_branches(more_branches + friend_branches, append=True)
 
     sel_path = "{0}/selected-{1}.root".format(config.output_dir, n)
     sel_name ="DecayTree"
@@ -100,23 +115,10 @@ def setup_analysis(mode, polarity, year):
         # Create selected ntuple containing all selection branches
         sel_f = ROOT.TFile(sel_path, "create")
         sel_t = ROOT.TTree(sel_name, sel_name)
-        # Branches of the original ntuple
+        # Branches of the original ntuple (does not including the friend)
         ref_branches = list(n.GetListOfBranches())
-        # Link branches from ntuple TTree to selected TTree
-        link_branches(n, sel_t, ref_branches)
-        # Link all branches from friend trees, including current deactive
-        friends = n.GetListOfFriends()
-        for f in friends:
-            ft = f.GetTree()
-            fb = list(ft.GetListOfBranches())
-            for b in fb:
-                # Activating branches on the friend tree directly
-                # doesn't activate them on the "master" tree, so we must
-                # loop through the friend's branches and do it manually
-                # We activate all friend branches as they're all quite
-                # useful
-                n.SetBranchStatus(b.GetName(), 1)
-            link_branches(n, sel_t, fb)
+        # Link branches from ntuple TTree (and its friend) to selected TTree
+        link_branches(n, sel_t, ref_branches + friend_branches)
         print "Creating selected tree for", n
         for entry in n:
             if n.passes_selection():
@@ -142,6 +144,7 @@ def setup_analysis(mode, polarity, year):
         mass_var,
         bins=num_bins
     )
+    c.SetName(w.GetName().replace("workspace", "canvas"))
     utilities.save_to_file("{0}/fits/selected-{1}.root".format(
         config.output_dir, n
     ), [w, c])
@@ -155,5 +158,6 @@ def setup_analysis(mode, polarity, year):
 
 if __name__ == "__main__":
     for mode in config.modes:
-        setup_analysis(mode, config.magboth, 2011)
+        for polarity in config.polarities:
+            setup_analysis(mode, polarity, 2011)
 
