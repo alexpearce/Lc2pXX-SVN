@@ -37,8 +37,31 @@ def link_branches(source, destination, branches):
                 b_name, ref, "{0}/{1}".format(b_name, b_type)
             )
 
+def create_metatree(mode, polarity, year, mc):
+    """Creates friend tree containing meta branches, saving sWeight plot.
 
-def setup_analysis(mode, polarity, year):
+    Doesn't live inside `setup_analysis` as it causes weird branch problems
+    when creating the selected ntuple.
+    """
+    n = ntuples.get_ntuple(
+        mode, polarity, year, mc=mc, mc_type=config.mc_stripped
+    )
+    w = ntuples.create_metatree(n)
+    c = plotting.plot_fit(
+        w, [
+            ("total_pdf", "Fit"),
+            ("signal_pdf", "Signal"),
+            ("background_pdf", "Background")
+        ],
+        "Lambdac_M",
+        bins=140
+    )
+    c.SetName(w.GetName().replace("workspace", "canvas"))
+    utilities.save_to_file("{0}/fits/sWeights-{1}.root".format(
+        config.output_dir, n
+    ), [w, c])
+
+def setup_analysis(mode, polarity, year, mc=False):
     """Creates ntuples and plots in preparation for the analysis.
 
     Two ntuples are created
@@ -52,29 +75,12 @@ def setup_analysis(mode, polarity, year):
     Before this script, there was, of course, a process of finding the
     best cuts for the selection, and few other cross checks.
     """
-    # Number of bins to create when plotting (fitting is unbinned)
-    num_bins = 140
-    mass_var = "Lambdac_M"
-
-    n = ntuples.get_ntuple(mode, polarity, year)
+    n = ntuples.get_ntuple(
+        mode, polarity, year, mc=mc, mc_type=config.mc_stripped
+    )
     # Create a MetaTree if it doesn't exist
     if not ntuples.add_metatree(n):
-        w = ntuples.create_metatree(n)
-        c = plotting.plot_fit(
-            w, [
-                ("total_pdf", "Fit"),
-                ("signal_pdf", "Signal"),
-                ("background_pdf", "Background")
-            ],
-            mass_var,
-            bins=140
-        )
-        c.SetName(w.GetName().replace("workspace", "canvas"))
-        utilities.save_to_file("{0}/fits/sWeights-{1}.root".format(
-            config.output_dir, n
-        ), [w, c])
-        # Make sure the ntuple isn't holding to any old references
-        n.ResetBranchAddresses()
+        create_metatree(mode, polarity, year, mc)
         ntuples.add_metatree(n)
     # Additional helpful branches to have
     friend_branches = [
@@ -83,24 +89,11 @@ def setup_analysis(mode, polarity, year):
         for b in f.GetTree().GetListOfBranches()
     ]
     more_branches = [
-        "Lambdac_P",
-        "Lambdac_PX",
-        "Lambdac_PY",
-        "Lambdac_PZ",
-        "Lambdac_PE",
-        "Lambdac_ETA",
-        "proton_PX",
-        "proton_PY",
-        "proton_PZ",
-        "proton_PE",
-        "h1_PX",
-        "h1_PY",
-        "h1_PZ",
-        "h1_PE",
-        "h2_PX",
-        "h2_PY",
-        "h2_PZ",
-        "h2_PE",
+        "{0}_{1}".format(particle, variable)
+        for particle in ("Lambdac", "proton", "h1", "h2")
+        for variable in ("P", "PX", "PY", "PZ", "PE", "ETA")
+    ]
+    more_branches += [
         "totCandidates",
         "nCandidate",
         "Polarity",
@@ -126,7 +119,7 @@ def setup_analysis(mode, polarity, year):
         sel_f.Write()
         sel_f.Close()
 
-    sel_n = n.__class__(sel_name, n.polarity, n.year)
+    sel_n = n.__class__(sel_name, n.polarity, n.year, n.mc)
     sel_n.add(sel_path)
 
     # Fit with final selection
@@ -141,8 +134,8 @@ def setup_analysis(mode, polarity, year):
             ("signal_pdf", "Signal"),
             ("background_pdf", "Background")
         ],
-        mass_var,
-        bins=num_bins
+        "Lambdac_M",
+        bins=140
     )
     c.SetName(w.GetName().replace("workspace", "canvas"))
     utilities.save_to_file("{0}/fits/selected-{1}.root".format(
@@ -157,7 +150,10 @@ def setup_analysis(mode, polarity, year):
 
 
 if __name__ == "__main__":
-    for mode in config.modes:
+    utilities.quiet_mode()
+    # for mode in config.modes:
+    for mode in (config.pKpi, config.pKK, config.ppipi):
         for polarity in config.polarities:
-            setup_analysis(mode, polarity, 2011)
+            setup_analysis(mode, polarity, 2011, mc=False)
+            setup_analysis(mode, polarity, 2011, mc=True)
 
