@@ -108,7 +108,7 @@ def get_ntuple(mode, polarity, year, mc=False, mc_type=None):
     # Create an ntuple of the class corresponding to the decay mode
     # TODO use Ntuple class rather than Lc2pXX for MCDecayTree
     klass = getattr(Lc2pXX, "Lc2{0}".format(mode))
-    ntuple = klass(tree_name, polarity, year)
+    ntuple = klass(tree_name, polarity, year, mc)
 
     if polarity in (config.magup, config.magboth):
         ntuple.add(ntuple_path(config.magup, year, mc, mode))
@@ -118,7 +118,7 @@ def get_ntuple(mode, polarity, year, mc=False, mc_type=None):
     return ntuple
 
 
-def get_selected(mode, polarity, year):
+def get_selected(mode, polarity, year, mc=False):
     """Return an Lc2pXX instance of selected candidates.
 
     The selected ntuple should only contain candidates which pass the full
@@ -135,7 +135,7 @@ def get_selected(mode, polarity, year):
     tree_name = "DecayTree"
 
     klass = getattr(Lc2pXX, "Lc2{0}".format(mode))
-    ntuple = klass(tree_name, polarity, year)
+    ntuple = klass(tree_name, polarity, year, mc)
     ntuple.add("{0}/selected-{1}.root".format(
         config.output_dir, ntuple
     ))
@@ -143,7 +143,7 @@ def get_selected(mode, polarity, year):
     return ntuple
 
 
-def luminosity(polarity, year, mc=False):
+def luminosity(polarity, year):
     """Calculates the luminosity for the given magnet polarity and year.
 
     The ufloat returned is given in inverse picobarns, and is calculated
@@ -152,7 +152,6 @@ def luminosity(polarity, year, mc=False):
     Keyword arguments:
     polarity -- One of lc2pxx.config.polarities
     year -- One of lc2pxx.config.years
-    mc -- If True, use MC data, else collision (default False)
     """
     log.info("Calculating luminosity for {0} {1}".format(year, polarity))
 
@@ -418,7 +417,7 @@ def create_metatree(ntuple):
     return workspace
 
 def add_metatree(ntuple):
-    """Add a meta friend tuple to ntupl, returning True if it exists."""
+    """Add a meta friend tuple to ntuple, returning True if it exists."""
     path = metatree_path(ntuple)
     exists = utilities.file_exists(path)
     if exists:

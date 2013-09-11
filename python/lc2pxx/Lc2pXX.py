@@ -16,29 +16,33 @@ class Lc2pXX(Ntuple.Ntuple):
         ])
     )
 
-    def __init__(self, name, polarity, year):
+    def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new Lc2pXX object.
 
         Keyword Arguments:
         name -- Name of the TTree this object represents
         year -- Year the ntuple represents (attribute)
         polarity -- Magnet polarity the data were recorded with (attribute)
+        mc -- Is the ntuple Monte Carlo data
         """
         log.info("Initialising Lc2pXX")
         super(Lc2pXX, self).__init__(name)
         self.year = year
         self.polarity = polarity
         self.stripping = config.stripping_years[self.year]
+        self.mc = mc
 
     @classmethod
     def from_ntuple(cls, ntuple):
         """Instantiate a new Lc2pXX from an existing one."""
-        return cls(ntuple.GetName(), ntuple.polarity, ntuple.year)
+        return cls(
+            ntuple.GetName(), ntuple.polarity, ntuple.year, ntuple.mc
+        )
 
     @classmethod
-    def from_tree(cls, tree, polarity, year):
+    def from_tree(cls, tree, polarity, year, mc=False):
         """Instantiate a new Lc2pXX from a TTree."""
-        ntuple = cls(tree.GetName(), polarity, year)
+        ntuple = cls(tree.GetName(), polarity, year, mc)
         # ROOT gymnastics
         ntuple.add(tree.GetCurrentFile().GetEndpointUrl().GetFile())
         return ntuple
@@ -49,9 +53,12 @@ class Lc2pXX(Ntuple.Ntuple):
         Useful for identifying saved friend trees, plots, etc.
         The format of the string is {mode}-{year}-{stripping}-{polarity}.
         """
-        return "{0}-{1}-{2}-{3}".format(
+        s = "{0}-{1}-{2}-{3}".format(
             self.mode, self.year, self.stripping, self.polarity
         )
+        if self.mc:
+            s += "-mc"
+        return s
 
     def passes_trigger(self):
         """Return True if current event passes trigger requirements."""
@@ -87,7 +94,11 @@ class Lc2pXX(Ntuple.Ntuple):
     preselection = "&&".join([
         config.lc_m_window,
         "5e3 < proton_P && proton_P < 1e5",
-        "2.0 < proton_ETA && proton_ETA < 4.5"
+        "2.0 < proton_ETA && proton_ETA < 4.5",
+        "proton_P > 9.3e3",
+        "(proton_P > 15.6e3 || proton_ETA < 3.875)",
+        "(proton_P < 29.8e3 || proton_ETA > 2.625)",
+        "(proton_P < 51.4e3 || proton_ETA > 3.25)"
     ])
     def passes_preselection(self):
         """Return True if current event passes preselection cuts."""
@@ -96,8 +107,17 @@ class Lc2pXX(Ntuple.Ntuple):
         # Proton momenta 5 < p < 100 GeV, eta 2 < n < 4.5
         # These are the limits imposed on the PID calibration samples,
         # so we must implement them too
-        proton_veto = 5e3 < self.val("proton_P") < 1e5
-        proton_veto = proton_veto and 2.0 < self.val("proton_ETA") < 4.5
+        proton_P = self.val("proton_P")
+        proton_ETA = self.val("proton_ETA")
+        proton_veto = (
+            (5e3 < proton_P < 1e5) and
+            (2.0 < proton_ETA < 4.5) and
+            # Vetoes due to lack of PID calibration data in these regions
+            (proton_P > 9.3e3) and
+            (proton_P > 15.6e3 or proton_ETA < 3.875) and
+            (proton_P < 29.8e3 or proton_ETA > 2.625) and
+            (proton_P < 51.4e3 or proton_ETA > 3.25)
+        )
         return (
             lc_mass and
             proton_veto and
@@ -156,9 +176,7 @@ class Lc2pXX(Ntuple.Ntuple):
             "h2_ETA",
             "h2_ProbNNp",
             "h2_ProbNNk",
-            "h2_ProbNNpi",
-            "Lambdac_Loki_DOCAMAX",
-            "Lambdac_ENDVERTEX_CHI2"
+            "h2_ProbNNpi"
         ]
         if self.stripping == "17b":
             branches += [
@@ -175,6 +193,13 @@ class Lc2pXX(Ntuple.Ntuple):
                 "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
                 "Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS",
                 "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"
+            ]
+        if self.mc:
+            # Background categories described in IBackgroundCategory
+            # http://cern.ch/go/BJQ8
+            branches += [
+                "Lambdab_BKGCAT",
+                "Lambdac_BKGCAT"
             ]
         # Only activate MetaTree branches if tree is attached
         if self.GetFriend(config.metatree_name) != None:
@@ -195,10 +220,10 @@ class Lc2pKpi(Lc2pXX):
     mode = config.pKpi
     shapes_preselection = ("GCB", "EXP")
     shapes_postselection = ("GCB", "EXP")
-    def __init__(self, name, polarity, year):
+    def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKpi")
-        super(Lc2pKpi, self).__init__(name, polarity, year)
+        super(Lc2pKpi, self).__init__(name, polarity, year, mc)
 
     preselection = "({0}) && ({1})".format(
         Lc2pXX.preselection,
@@ -220,9 +245,7 @@ class Lc2pKpi(Lc2pXX):
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
-        doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
-        vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
-        return doca and vertex
+        return True
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
@@ -238,10 +261,10 @@ class Lc2pKK(Lc2pXX):
     mode = config.pKK
     shapes_preselection = ("SGS", "EXP")
     shapes_postselection = ("DGS", "EXP")
-    def __init__(self, name, polarity, year):
+    def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKK")
-        super(Lc2pKK, self).__init__(name, polarity, year)
+        super(Lc2pKK, self).__init__(name, polarity, year, mc)
 
     preselection = "({0}) && ({1})".format(
         Lc2pXX.preselection,
@@ -263,9 +286,7 @@ class Lc2pKK(Lc2pXX):
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
-        doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
-        vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
-        return doca and vertex
+        return True
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
@@ -281,10 +302,10 @@ class Lc2ppipi(Lc2pXX):
     mode = config.ppipi
     shapes_preselection = ("SGS", "EXP")
     shapes_postselection = ("DGS", "EXP")
-    def __init__(self, name, polarity, year):
+    def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2ppipi")
-        super(Lc2ppipi, self).__init__(name, polarity, year)
+        super(Lc2ppipi, self).__init__(name, polarity, year, mc)
 
     preselection = "({0}) && ({1})".format(
         Lc2pXX.preselection,
@@ -309,9 +330,7 @@ class Lc2ppipi(Lc2pXX):
         h1_h2_M = self.val("h1_h2_M")
         # Require pi+pi- invariant mass outside KS window
         ks = h1_h2_M < 480. or h1_h2_M > 520.
-        doca = self.val("Lambdac_Loki_DOCAMAX") < 0.4
-        vertex = self.val("Lambdac_ENDVERTEX_CHI2") < 15
-        return ks and doca and vertex
+        return ks
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
@@ -322,18 +341,15 @@ class Lc2ppipi(Lc2pXX):
         return probnn
 
 
-# The DOCAMAX cut kills the signal for both modes
-# The distribution is much broader as the KS track has to be extrapolated
-# a large distance to the Lambda_c vertex
 class Lc2pKSLL(Lc2pXX):
     """Wrapper class for Lc to pKS (long-long KS to pipi) decay ntuples."""
     mode = config.pKSLL
     shapes_preselection = ("DGS", "EXP")
     shapes_postselection = ("DGS", "EXP")
-    def __init__(self, name, polarity, year):
+    def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKSLL")
-        super(Lc2pKSLL, self).__init__(name, polarity, year)
+        super(Lc2pKSLL, self).__init__(name, polarity, year, mc)
 
     # Although there are no offline PID cuts on the pions, there are
     # still the stripping DLL cuts, and these still need calibration
@@ -373,10 +389,10 @@ class Lc2pKSDD(Lc2pXX):
     mode = config.pKSDD
     shapes_preselection = ("DGS", "EXP")
     shapes_postselection = ("DGS", "EXP")
-    def __init__(self, name, polarity, year):
+    def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKSDD")
-        super(Lc2pKSDD, self).__init__(name, polarity, year)
+        super(Lc2pKSDD, self).__init__(name, polarity, year, mc)
 
     # Although there are no offline PID cuts on the pions, there are
     # still the stripping DLL cuts, and these still need calibration

@@ -16,6 +16,14 @@ from uncertainties import ufloat
 
 import lc2pxx
 
+def quiet_mode():
+    """Enables ROOT batch mode (no X windows) and sets no INFO logging."""
+    # Enable batch mode -> no X windows
+    ROOT.gROOT.SetBatch(True)
+    # Disable INFO level logging, i.e. WARNING and up
+    ROOT.gErrorIgnoreLevel = ROOT.kWarning
+    log.info("Quiet mode enabled")
+
 def progress_bar(fraction):
     """Prints a progress bar filled proportionally to fraction.
 
