@@ -264,10 +264,10 @@ def _gaussian_crystal_ball(workspace):
     """Add a Gaussian + Crystal Ball signal PDF to the workspace."""
     log.info("Adding Gaussian Crystal Ball signal PDF to workspace.")
     workspace.factory("mu[2290, 2285, 2295]")
-    workspace.factory("sigma_one[4, 0, 8]")
-    workspace.factory("sigma_two[7, 4, 15]")
-    workspace.factory("alpha[1.5, -5, 5]")
-    workspace.factory("n[2, 1, 10]")
+    workspace.factory("sigma_one[7, 0, 15]")
+    workspace.factory("sigma_two[4, 0, 15]")
+    workspace.factory("alpha[2, -6, 6]")
+    workspace.factory("n[2, 0, 10]")
     workspace.factory("RooGaussian::pdf_gauss_one("
         "{0}, mu, sigma_one"
     ")".format(consts["var_name"]))
