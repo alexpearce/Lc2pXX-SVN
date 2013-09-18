@@ -22,58 +22,17 @@ def efficiency(mode, polarity, year):
     ))
     tracking_table = tracking_table_f.Get("Ratio")
 
-    tracks = ("mu", "proton", "h1", "h2")
-    # One p-eta spectrum per track, using the tracking table binnin
-    spectra = {}
-    branches = []
-    for track in tracks:
-        for var in ("P", "ETA"):
-            branches.append("{0}_{1}".format(track, var))
-        s = tracking_table.Clone("{0}_spectrum".format(track))
-        s.Reset()
-        spectra[track] = s
-
     mc_ntuple = ntuples.get_ntuple(
         mode, polarity, year, mc=True, mc_type=config.mc_stripped
     )
-    mc_ntuple.activate_branches(branches)
-
-    # Tracking table has momentum in GeV, ntuples have it in MeV
-    gev = 1000.
-
-    print "Filling tracking efficiency spectra"
-    for entry in mc_ntuple:
-        # While we could loop through `tracks` and do string sub'ing here,
-        # this loop is slow enough as it is, so be explict
-        spectra["mu"].Fill(
-            mc_ntuple.val("mu_P")/gev,
-            mc_ntuple.val("mu_ETA")
-        )
-        spectra["proton"].Fill(
-            mc_ntuple.val("proton_P")/gev,
-            mc_ntuple.val("proton_ETA")
-        )
-        spectra["h1"].Fill(
-            mc_ntuple.val("h1_P")/gev,
-            mc_ntuple.val("h1_ETA")
-        )
-        spectra["h2"].Fill(
-            mc_ntuple.val("h2_P")/gev,
-            mc_ntuple.val("h2_ETA")
-        )
+    tracks = ("mu", "proton", "h1", "h2")
+    spectra = signal_spectra(mc_ntuple, tracks, tracking_table)
 
     # TODO naive calculation, does not account for correlations
     total_efficiency = 1.
     effs = {}
     for track in tracks:
-        eff = efficiency_from_spectrum(
-            spectra[track],
-            tracking_table
-        )
-        # eff = smeared_efficiency_from_spectrum(
-        #     spectra[track],
-        #     tracking_table
-        # )
+        eff = efficiency_from_spectrum(spectra[track], tracking_table)
         total_efficiency *= eff
         effs[track] = eff
     tracking_table_f.Close()
@@ -81,9 +40,130 @@ def efficiency(mode, polarity, year):
     return total_efficiency
 
 
+def efficiency_smeared(mode, polarity, year, toys=30):
+    """Return the tracking efficiency form the "smearing" method.
+
+    The smearing method proceeds in the same way as usual (see `efficiency),
+    except in runs a number of experiments, in each case "smearing" the
+    tracking table by its errors.
+    This is done by copying the tracking table, and then changing the
+    nominal values with
+        smeared_nom_val = TRandom3.Gaus(nom_val, err_on_nom_val).
+    The efficiency is then calculated with the smeared table.
+    This process is repeated many times, with the final efficiency being
+    the mean of the experiments, and the error the RMS.
+    """
+    tracking_table_f = ROOT.TFile("{0}/tracking_table.root".format(
+        config.output_dir
+    ))
+    tracking_table = tracking_table_f.Get("Ratio")
+
+    mc_ntuple = ntuples.get_ntuple(
+        mode, polarity, year, mc=True, mc_type=config.mc_stripped
+    )
+    tracks = ("mu", "proton", "h1", "h2")
+    spectra = signal_spectra(mc_ntuple, tracks, tracking_table)
+
+    # We use toys in division a lot, so make sure we're not doing integer
+    # division
+    f_toys = float(toys)
+    smeared_effs = []
+    print "Generating tracking efficiency toys"
+    # Go from 1 as a seed of 0 is a "random seed", and so not deterministic
+    for seed in range(1, toys + 1):
+        utilities.progress_bar(seed/f_toys)
+        smeared_table = smear_table(tracking_table, seed)
+        total_eff = 1.
+        for track in tracks:
+            eff = efficiency_from_spectrum(spectra[track], tracking_table)
+            total_eff *= eff
+        # We're not worried about the error here, we'll derive it later
+        smeared_effs.append(total_eff.nominal_value)
+    # Clear progress bar
+    print
+    tracking_table_f.Close()
+
+    # Tracking efficiency is mean of smeared efficiencies
+    tracking_eff = sum(smeared_effs)/f_toys
+    # Also calculate the mean of the squared smeared efficiencies
+    tracking_eff_sq = sum([x*x for x in smeared_effs])/f_toys 
+    # So the uncertainty is the standard deviation
+    #   sigma = sqrt(variance) = sqrt(<x*x> - <x>*<x>)
+    tracking_eff_err = sqrt(tracking_eff_sq - (tracking_eff*tracking_eff))
+
+    return ufloat(tracking_eff, tracking_eff_err)
+
+
+def signal_spectra(ntuple, tracks, spectrum):
+    """Return dictionary of p-eta spectra for the tracks in ntuple.
+
+    Keyword arguments:
+    ntuple -- Ntuple instance
+    tracks -- List of ntuple branches to fill spectra for
+    spectrum -- Template TH2F spectrum to use. This method will copy and
+      erase it
+    """
+    # Make sure the branches we need are active
+    branches = []
+    # Order here is order vars are passed to TH2F::Fill
+    vars = ["P", "ETA"]
+    spectra = {}
+    for track in tracks:
+        for var in vars:
+            branches.append("{0}_{1}".format(track, var))
+        s = spectrum.Clone("{0}_spectrum".format(track))
+        s.Reset()
+        spectra[track] = s
+    ntuple.activate_branches(branches)
+
+    # Tracking table has momentum in GeV, ntuples have it in MeV
+    gev = 1000.
+
+    print "Filling tracking efficiency spectra"
+
+    refs = {}
+    # Fill a dictionary with references to the ntuple branches
+    # This saves us having to construct a branch name string each entry
+    for track in tracks:
+        refs[track] = []
+        for var in vars:
+            refs[track].append(
+                ntuple.val("{0}_{1}".format(track, var), reference=True)
+            )
+    for entry in ntuple:
+        for track in tracks:
+            # The extra [0] accesses the value from the reference
+            spectra[track].Fill(refs[track][0][0]/gev, refs[track][1][0])
+    return spectra
+
+
+def smear_table(spectrum, seed):
+    """Return a clone of spectrum, smeared by its errors.
+
+    Using TRandom3, set with a seed of `seed`, the new values are given by
+        new_value = TRandom3.Gaus(value, value_err)
+    in each bin.
+    For the same seed and spectrum, this method will return the same
+    smeared table (i.e. this method is deterministic, except when seed=0).
+    Keyword arguments:
+    spectrum -- Tracking efficiency spectrum to smear
+    seed -- Seed to pass to TRandom3 instance
+    """
+    rnd = ROOT.TRandom3()
+    rnd.SetSeed(seed)
+    smeared = spectrum.Clone("smeared_{0}".format(spectrum.GetName()))
+    for i in range(spectrum.GetNbinsX()):
+        for j in range(spectrum.GetNbinsY()):
+            weight = spectrum.GetBinContent(i, j)
+            error = spectrum.GetBinError(i, j)
+            new_weight = rnd.Gaus(weight, error)
+            smeared.SetBinContent(i, j, new_weight)
+    return smeared
+
 def efficiency_from_spectrum(spectrum, tracking_table):
     """Return the total tracking efficiency for the p-eta spectrum.
 
+    This is option two on the TrackingEffRatio page.
     Keyword arguments:
     spectrum -- Filled p-eta TH2F spectrum
     tracking_table -- Tracking efficiency TH2F in p-eta bins
@@ -110,61 +190,6 @@ def efficiency_from_spectrum(spectrum, tracking_table):
     return ufloat(
         total_ratio/total_weight,
         sqrt(total_error)/total_weight
-    )
-
-
-def smeared_efficiency_from_spectrum(spectrum, tracking_table):
-    """Return the efficiency obtained for toy experiments.
-
-    For each toy, the efficiency in each bin is calculated as the average
-    of of the smeared efficiencies per event in that bin, and the total
-    efficiency across the spectrum is the average of these.
-    The error on the efficiency is the average RMS of the bin efficiencies
-    across all toys
-        variance = <mean eff> - <mean eff^2>
-        std. dev. = sqrt(variance)
-    """
-    bins_x = spectrum.GetNbinsX()
-    bins_y = spectrum.GetNbinsY()
-    total_ratio = 0.
-    total_ratio2 = 0.
-    # Random number generator
-    rand = ROOT.TRandom3()
-    toys = 30
-    print "Generating {0} smeared tracking efficiency toys".format(toys)
-    for toy in range(toys):
-        utilities.progress_bar(toy/float(toys))
-        # Average of the smeared efficiencies
-        mean = 0.
-        # Number of entries in the spectrum
-        entries = 0
-        for i in range(bins_x + 1):
-            for j in range(bins_y + 1):
-                # Calculate efficiency and error
-                p = spectrum.GetXaxis().GetBinCenter(i)
-                eta = spectrum.GetYaxis().GetBinCenter(j)
-                # Sum of weights in the bin
-                bin_entries = spectrum.GetBinContent(i, j)
-                eff_ratio = efficiency_for_p_eta(p, eta, tracking_table)
-                ratio = eff_ratio.nominal_value
-                error = eff_ratio.std_dev
-                # Different seed per bin
-                rand.SetSeed(toy + (int(abs(ratio - 1.0)*1e5)))
-                # Loop over each entry in the bin, recalculating the mean
-                # efficiency by adding an efficiency smeared by it's error
-                for k in range(int(bin_entries)):
-                    entries += 1
-                    smeared = rand.Gaus(ratio, error)
-                    mean = (smeared + mean*(entries - 1))/entries
-        # Recalculate the total efficiency so far by adding the mean
-        # efficiency for the toy
-        total_ratio = (mean + (total_ratio*toy))/(toy + 1)
-        total_ratio2 = ((mean*mean) + (total_ratio2*toy))/(toy + 1)
-    # Clear progress bar
-    print
-    return ufloat(
-        total_ratio,
-        sqrt(total_ratio2 - (total_ratio*total_ratio))
     )
 
 
