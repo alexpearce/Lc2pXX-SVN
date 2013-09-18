@@ -17,6 +17,7 @@ def efficiency(mode, polarity, year):
     stripping" efficiency , or a combined "acceptance and reconstruction"
     efficiency.
     """
+    truth = "Lambdac_BKGCAT < 20 && Lambdab_BKGCAT < 60"
     acc_ntuple = ntuples.get_ntuple(
         mode, polarity, year, mc=True, mc_type=config.mc_generated
     )
@@ -24,7 +25,7 @@ def efficiency(mode, polarity, year):
     reco_ntuple = ntuples.get_ntuple(
         mode, polarity, year, mc=True, mc_type=config.mc_cheated
     )
-    reco_num = reco_ntuple.GetEntries()
+    reco_num = reco_ntuple.GetEntries(truth)
 
     return utilities.efficiency_from_yields(reco_num, acc_num)
 
