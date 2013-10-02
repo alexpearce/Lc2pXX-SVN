@@ -74,3 +74,35 @@ def efficiency(mode, polarity, year):
 
     return yields_post[0]/yields_pre[0]
 
+
+def efficiency_mc(mode, polarity, year):
+    """Return the offline selection efficiency, minus PID, from MC.
+
+    This effectively merges the MC stripping efficiency with the vetoes
+    and vertex cuts, then the trigger efficiencies will be wrt to these
+    cuts. The TISTOS data cross check should then be after stripping and
+    offline cuts.
+    There is no weighting here: we assume that track momentum and
+    psuedorapdity distributions, as well the vertex variables, are well
+    modelled in MC.
+    """
+    ntuple = ntuples.get_ntuple(
+        mode, polarity, year, mc=True, mc_type=config.mc_stripped
+    )
+    ntuples.add_metatree(ntuple)
+    ntuple.activate_selection_branches()
+    truth_str = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
+    num_stripped = ntuple.GetEntries(truth_str)
+
+    num_offline = 0
+    print "Calculating offline selection efficiency in MC"
+    for entry in ntuple:
+        lb_truth = ntuple.val("Lambdab_BKGCAT") < 60
+        lc_truth = ntuple.val("Lambdac_BKGCAT") < 20
+        truth = lb_truth and lc_truth
+        offline = ntuple.passes_offline_cuts()
+        if offline and truth:
+            num_offline += 1
+
+    return utilities.efficiency_from_yields(num_offline, num_stripped)
+
