@@ -3,6 +3,56 @@ import ROOT
 from lc2pxx import config, ntuples, fitting, plotting, utilities
 
 def efficiency(mode, polarity, year):
+    """Return the efficiency of the TOS trigger chain, wrt stripping.
+
+    This performs the same measurement as `efficiency`, but selects TOS
+    candidates with respect to stripped candidates, rather than
+    reconstructed candidates.
+    """
+    strip_ntuple = ntuples.get_ntuple(
+        mode, polarity, year, mc=True, mc_type=config.mc_stripped
+    )
+    truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
+    tos_selection = "({0}) && ({1})".format(
+        truth_matching, strip_ntuple.trigger_requirements
+    )
+    num_pre = strip_ntuple.GetEntries(truth_matching)
+    num_tos = strip_ntuple.GetEntries(tos_selection)
+
+    return utilities.efficiency_from_yields(num_tos, num_pre)
+
+
+def efficiency_post_stripping(mode, polarity, year):
+    """Return the efficiency of the TOS trigger chain after stripping.
+
+    This is like `efficiency`, but includes the "offline" kinematic vetoes
+    and vertex cuts.
+    """
+    ntuple = ntuples.get_ntuple(
+        mode, polarity, year, mc=True, mc_type=config.mc_stripped
+    )
+    ntuples.add_metatree(ntuple)
+    ntuple.activate_selection_branches()
+    truth_str = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
+
+    num_offline = 0
+    num_trigger = 0
+    print "Calculating post-offline trigger efficiency in MC"
+    for entry in ntuple:
+        lb_truth = ntuple.val("Lambdab_BKGCAT") < 60
+        lc_truth = ntuple.val("Lambdac_BKGCAT") < 20
+        truth = lb_truth and lc_truth
+        offline = ntuple.passes_offline_cuts()
+        trigger = ntuple.passes_trigger()
+        if offline and truth:
+            num_offline += 1
+            if trigger:
+                num_trigger += 1
+
+    return utilities.efficiency_from_yields(num_trigger, num_offline)
+
+
+def efficiency_pre_stripping(mode, polarity, year):
     """Return the efficiency of the TOS trigger chain.
 
     This could be done by exploiting the TIS/TOS relationship
@@ -15,26 +65,6 @@ def efficiency(mode, polarity, year):
     """
     reco_ntuple = ntuples.get_ntuple(
         mode, polarity, year, mc=True, mc_type=config.mc_cheated
-    )
-    truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
-    tos_selection = "({0}) && ({1})".format(
-        truth_matching, reco_ntuple.trigger_requirements
-    )
-    num_pre = reco_ntuple.GetEntries(truth_matching)
-    num_tos = reco_ntuple.GetEntries(tos_selection)
-
-    return utilities.efficiency_from_yields(num_tos, num_pre)
-
-
-def efficiency_post_stripping(mode, polarity, year):
-    """Return the efficiency of the TOS trigger chain, wrt stripping.
-
-    This performs the same measurement as `efficiency`, but selects TOS
-    candidates with respect to stripped candidates, rather than
-    reconstructed candidates.
-    """
-    reco_ntuple = ntuples.get_ntuple(
-        mode, polarity, year, mc=True, mc_type=config.mc_stripped
     )
     truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
     tos_selection = "({0}) && ({1})".format(
@@ -92,7 +122,8 @@ def efficiency_tistos(mode, polarity, year):
             n.val("Lambdab_Hlt2TopoMu4BodyBBDTDecision_TIS"))
         )
         trigger_tos = n.passes_trigger()
-        pid = n.passes_pid_cuts()
+        # pid = n.passes_pid_cuts()
+        pid = n.passes_offline_cuts()
         if trigger_tis and pid:
             temp_t_pre.Fill()
             if trigger_tos:
