@@ -75,7 +75,7 @@ def efficiency_smeared(mode, polarity, year, toys=30):
         smeared_table = smear_table(tracking_table, seed)
         total_eff = 1.
         for track in tracks:
-            eff = efficiency_from_spectrum(spectra[track], tracking_table)
+            eff = efficiency_from_spectrum(spectra[track], smeared_table)
             total_eff *= eff
         # We're not worried about the error here, we'll derive it later
         smeared_effs.append(total_eff.nominal_value)
@@ -85,13 +85,13 @@ def efficiency_smeared(mode, polarity, year, toys=30):
 
     # Tracking efficiency is mean of smeared efficiencies
     tracking_eff = sum(smeared_effs)/f_toys
-    # Also calculate the mean of the squared smeared efficiencies
-    tracking_eff_sq = sum([x*x for x in smeared_effs])/f_toys 
-    # So the uncertainty is the standard deviation
-    #   sigma = sqrt(variance) = sqrt(<x*x> - <x>*<x>)
-    tracking_eff_err = sqrt(tracking_eff_sq - (tracking_eff*tracking_eff))
+    variance = sum([
+        (x - tracking_eff)*(x - tracking_eff) for x in smeared_effs
+    ])/f_toys
+    # Error is standard deviation
+    std_dev = sqrt(variance)
 
-    return ufloat(tracking_eff, tracking_eff_err)
+    return ufloat(tracking_eff, std_dev)
 
 
 def signal_spectra(ntuple, tracks, spectrum):
