@@ -36,7 +36,7 @@ def efficiency(mode, polarity, year):
     [1] - http://cern.ch/go/n6DX (P. Robbe, Gauss Generation slides)
     [2] - http://cern.ch/go/t9mH (Dirac requests monitor web page)
     [3] - http://cern.ch/go/6mLt (Build statistics HTML instructions)
-    [3] - http://cern.ch/go/rCD6 (HTML generator statistics)
+    [4] - http://cern.ch/go/rCD6 (HTML generator statistics)
     """
     efficiencies_2011 = {
         config.pKpi: {
@@ -52,11 +52,6 @@ def efficiency(mode, polarity, year):
             config.magdown: ufloat(0.1691, 0.000440)
         }
     }
-    for m in config.modes:
-        effs = efficiencies_2011[m]
-        up = effs[config.magup]
-        down = effs[config.magdown]
-        effs[config.magboth] = (up + down)/2
 
     efficiencies_2012 = {
         config.pKpi: {
@@ -77,6 +72,13 @@ def efficiency(mode, polarity, year):
         2011: efficiencies_2011,
         2012: efficiencies_2012
     }
+
+    for y in config.years:
+        for m in config.modes:
+            effs = efficiencies[y][m]
+            up = effs[config.magup]
+            down = effs[config.magdown]
+            effs[config.magboth] = (up + down)/2
 
     return efficiencies[year][mode][polarity]
 
