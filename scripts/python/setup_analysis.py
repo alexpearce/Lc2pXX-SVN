@@ -138,6 +138,10 @@ def setup_analysis(mode, polarity, year, mc=False):
         bins=140
     )
     c.SetName(w.GetName().replace("workspace", "canvas"))
+    # Uncomment to save a fit with log scale y-axis
+    # c.cd(1)
+    # ROOT.gPad.SetLogy()
+    # ROOT.gPad.Draw()
     utilities.save_to_file("{0}/fits/selected-{1}.root".format(
         config.output_dir, n
     ), [w, c])
