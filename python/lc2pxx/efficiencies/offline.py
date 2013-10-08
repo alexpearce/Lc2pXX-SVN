@@ -92,7 +92,7 @@ def efficiency_mc(mode, polarity, year):
     ntuples.add_metatree(ntuple)
     ntuple.activate_selection_branches()
     truth_str = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
-    num_stripped = ntuple.GetEntries(truth_str)
+    num_stripped = 0
 
     num_offline = 0
     print "Calculating offline selection efficiency in MC"
@@ -101,8 +101,10 @@ def efficiency_mc(mode, polarity, year):
         lc_truth = ntuple.val("Lambdac_BKGCAT") < 20
         truth = lb_truth and lc_truth
         offline = ntuple.passes_offline_cuts()
-        if offline and truth:
-            num_offline += 1
+        if truth:
+            num_stripped += 1
+            if offline:
+                num_offline += 1
 
     return utilities.efficiency_from_yields(num_offline, num_stripped)
 
