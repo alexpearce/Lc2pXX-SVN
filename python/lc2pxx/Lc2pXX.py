@@ -428,3 +428,17 @@ class Lc2pKSDD(Lc2pXX):
         probnn = proton and (h1 or h2)
         return probnn
 
+
+class Lc2pphi(Lc2pKK):
+    """Wrapper class for Lc to pphi decay ntuples.
+
+    Subclass of Lc2pKK as the final states are identical.
+    """
+    mode = config.pphi
+    shapes_preselection = ("SGS", "EXP")
+    shapes_postselection = ("DGS", "EXP")
+    def __init__(self, name, polarity, year, mc=False):
+        """Initialiser for a new TChain. See Lc2pXX.__init__"""
+        log.info("Initialising Lc2pphi")
+        super(Lc2pphi, self).__init__(name, polarity, year, mc)
+

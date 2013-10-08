@@ -19,6 +19,10 @@ def efficiency(mode, polarity, year):
         config.ppipi: {
             config.magup: ufloat(0.46807, 0.00010),
             config.magdown: ufloat(0.47014, 0.00009)
+        },
+        config.pphi: {
+            config.magup: ufloat(0.34985, 0.00012),
+            config.magdown: ufloat(0.35816, 0.00010)
         }
     }
 
@@ -36,6 +40,8 @@ def efficiency(mode, polarity, year):
             config.magdown: ufloat(1.0, 1.0)
         }
     }
+
+    efficiencies_2012[config.pphi] = efficiencies_2012[config.pKK]
 
     efficiencies = {
         2011: efficiencies_2011,

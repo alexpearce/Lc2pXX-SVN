@@ -25,14 +25,17 @@ pKK = "pKK"
 ppipi = "ppipi"
 pKSDD = "pKSDD"
 pKSLL = "pKSLL"
-modes = (pKpi, pKK, ppipi, pKSLL, pKSDD)
+pphi = "pphi"
+modes = (pKpi, pKK, ppipi, pKSLL, pKSDD, pphi)
 
 # Map modes to Monte Carlo event types
 # http://cern.ch/go/Fkl8
 mc_event_types = {
     pKpi: 15874000,
     pKK: 15674000,
-    ppipi: 15674010
+    ppipi: 15674010,
+    # This is a fake EventType, the decay file does not exist
+    pphi: 15674001
 }
 # Types of Monte Carlo ntuple produced
 mc_generated = "generated"
@@ -47,6 +50,7 @@ km_latex = "K^{#font[122]{-}}"
 pip_latex = "#pi^{+}"
 pim_latex = "#pi^{#font[122]{-}}"
 ks_latex = "K_{S}^{0}"
+phi_latex = "#phi"
 proton_latex = "p"
 lambdac_latex = "#Lambda_{c}^{+}"
 daughters = ("proton", "h1", "h2")
@@ -75,6 +79,11 @@ daughters_latex = {
         "proton": proton_latex,
         "h1": ks_latex,
         "h2": "(DD)"
+    },
+    pphi: {
+        "proton": proton_latex,
+        "h1": phi_latex,
+        "h2": ""
     }
 }
 modes_latex = {}

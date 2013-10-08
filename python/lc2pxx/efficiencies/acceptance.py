@@ -68,6 +68,10 @@ def efficiency(mode, polarity, year):
         }
     }
 
+    # Add pphi, assuming acc. eff. is equal is pKK
+    efficiencies_2011[config.pphi] = efficiencies_2011[config.pKK]
+    efficiencies_2012[config.pphi] = efficiencies_2012[config.pKK]
+
     efficiencies = {
         2011: efficiencies_2011,
         2012: efficiencies_2012
