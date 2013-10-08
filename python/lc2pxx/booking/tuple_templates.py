@@ -1,7 +1,6 @@
 from Configurables import (
     DecayTreeTuple,
-    MCDecayTreeTuple,
-    MCDecayFinder
+    MCDecayTreeTuple
 )
 from DecayTreeTuple.Configuration import *
 
@@ -134,8 +133,6 @@ def mc_decay_tree_tuple(name, decay, mothers, daughters):
     """
     tuple = MCDecayTreeTuple(name)
     tuple.Decay = decay
-    tuple.addTool(MCDecayFinder())
-    tuple.MCDecayFinder.ResonanceThreshold = 5e-10
     tuple.Branches = dict(mothers.items() + daughters.items())
     tuple.ToolList += [
         "MCTupleToolPID",
