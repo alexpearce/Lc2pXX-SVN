@@ -4,18 +4,6 @@ from lc2pxx import config, utilities, Ntuple
 
 class Lc2pXX(Ntuple.Ntuple):
     """Ntuple representing all Lambda_c to proton h^+ h^- decays."""
-    # Cut string of triggers used in the analysis
-    # Equal across all modes
-    trigger_requirements = "({0})&&({1})&&({2})".format(
-        "mu_L0MuonDecision_TOS",
-        "mu_Hlt1TrackMuonDecision_TOS",
-        "||".join([
-            "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
-            "Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS",
-            "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"
-        ])
-    )
-
     def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new Lc2pXX object.
 
@@ -59,6 +47,22 @@ class Lc2pXX(Ntuple.Ntuple):
         if self.mc:
             s += "-mc"
         return s
+
+    def trigger_requirements(self):
+        """Return cut string of trigger requirements.
+
+        Equal across all modes, dependent on stripping version as S17b
+        ntuples have branch names in different formats.
+        """
+        return "({0})&&({1})&&({2})".format(
+            "mu{0}L0MuonDecision_TOS",
+            "mu{0}Hlt1TrackMuonDecision_TOS",
+            "||".join([
+                "Lambdab{0}Hlt2TopoMu2BodyBBDTDecision_TOS",
+                "Lambdab{0}Hlt2TopoMu3BodyBBDTDecision_TOS",
+                "Lambdab{0}Hlt2TopoMu4BodyBBDTDecision_TOS"
+            ])
+        ).format(["_", ""][self.stripping == "17b"])
 
     def passes_trigger(self):
         """Return True if current event passes trigger requirements."""

@@ -249,7 +249,7 @@ def create_metatree(ntuple):
     # Make sure the branches we need are active
     ntuple.activate_selection_branches()
     selection = "({0}) && ({1})".format(
-        ntuple.trigger_requirements,
+        ntuple.trigger_requirements(),
         ntuple.preselection
     )
     # Generate sWeights

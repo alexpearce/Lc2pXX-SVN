@@ -14,7 +14,7 @@ def efficiency(mode, polarity, year):
     )
     truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
     tos_selection = "({0}) && ({1})".format(
-        truth_matching, strip_ntuple.trigger_requirements
+        truth_matching, strip_ntuple.trigger_requirements()
     )
     num_pre = strip_ntuple.GetEntries(truth_matching)
     num_tos = strip_ntuple.GetEntries(tos_selection)
@@ -68,7 +68,7 @@ def efficiency_pre_stripping(mode, polarity, year):
     )
     truth_matching = "Lambdab_BKGCAT < 60 && Lambdac_BKGCAT < 20"
     tos_selection = "({0}) && ({1})".format(
-        truth_matching, reco_ntuple.trigger_requirements
+        truth_matching, reco_ntuple.trigger_requirements()
     )
     num_pre = reco_ntuple.GetEntries(truth_matching)
     num_tos = reco_ntuple.GetEntries(tos_selection)
