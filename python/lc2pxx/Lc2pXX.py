@@ -55,30 +55,22 @@ class Lc2pXX(Ntuple.Ntuple):
         ntuples have branch names in different formats.
         """
         return "({0})&&({1})&&({2})".format(
-            "mu{0}L0MuonDecision_TOS",
-            "mu{0}Hlt1TrackMuonDecision_TOS",
+            "mu_L0MuonDecision_TOS",
+            "mu_Hlt1TrackMuonDecision_TOS",
             "||".join([
-                "Lambdab{0}Hlt2TopoMu2BodyBBDTDecision_TOS",
-                "Lambdab{0}Hlt2TopoMu3BodyBBDTDecision_TOS",
-                "Lambdab{0}Hlt2TopoMu4BodyBBDTDecision_TOS"
+                "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
+                "Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS",
+                "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"
             ])
-        ).format(["_", ""][self.stripping == "17b"])
+        )
 
     def passes_trigger(self):
         """Return True if current event passes trigger requirements."""
-        # The 17b ntuples are missing the _ seperator from trigger branches
-        if self.stripping == "17b":
-            l0 = self.val("muL0MuonDecision_TOS")
-            hlt1 = self.val("muHlt1TrackMuonDecision_TOS")
-            hlt2 = (self.val("LambdabHlt2TopoMu2BodyBBDTDecision_TOS") or
-                self.val("LambdabHlt2TopoMu3BodyBBDTDecision_TOS") or
-                self.val("LambdabHlt2TopoMu4BodyBBDTDecision_TOS"))
-        else:
-            l0 = self.val("mu_L0MuonDecision_TOS")
-            hlt1 = self.val("mu_Hlt1TrackMuonDecision_TOS")
-            hlt2 = (self.val("Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS") or
-                self.val("Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS") or
-                self.val("Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"))
+        l0 = self.val("mu_L0MuonDecision_TOS")
+        hlt1 = self.val("mu_Hlt1TrackMuonDecision_TOS")
+        hlt2 = (self.val("Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS") or
+            self.val("Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS") or
+            self.val("Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"))
         return l0 and hlt1 and hlt2
 
     def passes_specific_preselection(self):
@@ -180,24 +172,13 @@ class Lc2pXX(Ntuple.Ntuple):
             "h2_ETA",
             "h2_ProbNNp",
             "h2_ProbNNk",
-            "h2_ProbNNpi"
+            "h2_ProbNNpi",
+            "mu_L0MuonDecision_TOS",
+            "mu_Hlt1TrackMuonDecision_TOS",
+            "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
+            "Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS",
+            "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"
         ]
-        if self.stripping == "17b":
-            branches += [
-                "muL0MuonDecision_TOS",
-                "muHlt1TrackMuonDecision_TOS",
-                "LambdabHlt2TopoMu2BodyBBDTDecision_TOS",
-                "LambdabHlt2TopoMu3BodyBBDTDecision_TOS",
-                "LambdabHlt2TopoMu4BodyBBDTDecision_TOS"
-            ]
-        else:
-            branches += [
-                "mu_L0MuonDecision_TOS",
-                "mu_Hlt1TrackMuonDecision_TOS",
-                "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
-                "Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS",
-                "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"
-            ]
         if self.mc:
             # Background categories described in IBackgroundCategory
             # http://cern.ch/go/BJQ8
