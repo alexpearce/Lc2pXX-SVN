@@ -267,7 +267,7 @@ def _gaussian_crystal_ball(workspace):
     workspace.factory("sigma_one[7, 0, 15]")
     workspace.factory("sigma_two[4, 0, 15]")
     workspace.factory("alpha[2, -6, 6]")
-    workspace.factory("n[2, 0, 10]")
+    workspace.factory("n[2, -10, 10]")
     workspace.factory("RooGaussian::pdf_gauss_one("
         "{0}, mu, sigma_one"
     ")".format(consts["var_name"]))
