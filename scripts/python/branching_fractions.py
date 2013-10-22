@@ -106,5 +106,5 @@ if __name__ == "__main__":
     # Exclude the pKS mode; we're not interested in it here
     config.modes = (config.pKpi, config.pKK, config.ppipi)
     for polarity in config.polarities:
-        effs[polarity] = branching_fractions(polarity, 2011)
+        branching_fractions(polarity, 2011)
 
