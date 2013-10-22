@@ -83,3 +83,29 @@ def efficiency_wrt_acceptance(mode, polarity, year):
 
     return utilities.efficiency_from_yields(num_stripped, num_accepted)
 
+
+def efficiency_no_reco(mode, polarity, year):
+    """Return the stripping efficiency with respect to the acceptance.
+
+    This efficiency represents the ratio
+        No. of strip+reco candidates / No. of accepted candidates.
+    It is calculated from Monte Carlo as the ratio of events which
+    pass the generator level cut to those which are reconstructed and
+    stripped.
+    This is the same efficiency as `wrt_acceptance`, but the number of acc.
+    candidates is obtained from ntuples. This assumes sane decay descriptors
+    in the MC ntuple options, as in the options file I use without creating the
+    mcMatch ntuple.
+    """
+    truth = "Lambdac_BKGCAT < 20 && Lambdab_BKGCAT < 60"
+    acc_ntuple = ntuples.get_ntuple(
+        mode, polarity, year, mc=True, mc_type=config.mc_generated
+    )
+    acc_num = acc_ntuple.GetEntries()
+    strip_ntuple = ntuples.get_ntuple(
+        mode, polarity, year, mc=True, mc_type=config.mc_stripped
+    )
+    strip_num = strip_ntuple.GetEntries(truth)
+
+    return utilities.efficiency_from_yields(strip_num, acc_num)
+

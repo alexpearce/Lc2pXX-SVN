@@ -38,7 +38,22 @@ def efficiency(mode, polarity, year):
     [3] - http://cern.ch/go/6mLt (Build statistics HTML instructions)
     [4] - http://cern.ch/go/rCD6 (HTML generator statistics)
     """
-    efficiencies_2011 = {
+    efficiencies_2011_17b = {
+        config.pKpi: {
+            config.magup: ufloat(0.33285, 0.000989),
+            config.magdown: ufloat(0.33330, 0.000989)
+        },
+        config.pKK: {
+            config.magup: ufloat(0.18145, 0.000599),
+            config.magdown: ufloat(0.1815, 0.000572)
+        },
+        config.ppipi: {
+            config.magup: ufloat(0.15690, 0.000513),
+            config.magdown: ufloat(0.15645, 0.000511)
+        }
+    }
+
+    efficiencies_2011_20r1 = {
         config.pKpi: {
             config.magup: ufloat(0.3347, 0.000779),
             config.magdown: ufloat(0.3347, 0.000776)
@@ -52,6 +67,11 @@ def efficiency(mode, polarity, year):
             config.magdown: ufloat(0.1691, 0.000440)
         }
     }
+
+    if config.stripping_years[2011] is "17b":
+        efficiencies_2011 = efficiencies_2011_17b
+    else:
+        efficiencies_2011 = efficiencies_2011_20r1
 
     efficiencies_2012 = {
         config.pKpi: {
