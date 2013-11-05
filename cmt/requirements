@@ -6,6 +6,10 @@ author Alex Pearce <alex.pearce@cern.ch>
 # Folders to process
 branches doc python
 
+# I get "genconfuser.py not found" without this line
+# Not sure why. PIDPerfScripts v6r1 cmt/requirements has, so now I do too
+apply_tag skip_genconfuser
+
 # Dependencies
 use GaudiPolicy v*
 use ROOT v* LCG_Interfaces
