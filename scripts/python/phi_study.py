@@ -67,10 +67,10 @@ def phi_study(polarity, year):
     # stripping wrt reco, or just stripping wrt acc.
     pphi_effs = {
         "Acceptance": acceptance.efficiency(m, polarity, year),
-        # "Reconstruction": reconstruction.efficiency(m, polarity, year),
+        "Reconstruction": reconstruction.efficiency(m, polarity, year),
         "Tracking": tracking.efficiency_smeared(m, polarity, year),
-        # "Stripping": stripping.efficiency(m, polarity, year),
-        "Stripping": stripping.efficiency_no_reco(m, polarity, year),
+        "Stripping": stripping.efficiency(m, polarity, year),
+        # "Stripping": stripping.efficiency_no_reco(m, polarity, year),
         "Trigger": trigger.efficiency_post_stripping(m, polarity, year),
         "Offline": offline.efficiency_mc(m, polarity, year),
         "PID": pid.efficiency(m, polarity, year)
