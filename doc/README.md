@@ -32,7 +32,7 @@ The incomplete list of features, both current and planned, includes:
 * Calculation of interesting quantities, such as efficiencies and branching fractions.
 
 In general, the analyst will link together such features in a script dependent on this module which performs a single task, or a series of closely related tasks.
-A set of examples is given in `scripts/python/examples.py`.
+A set of examples is given in `scripts/python`.
 
 Again, the module is not intended to contain a monolithic `do_analysis` method.
 
@@ -52,7 +52,6 @@ The most important points are:
 This all seems pedantic, but consistency is key to readable, maintainable code.
 
 Once you've made your contribution, create a commit with a descriptive log message (e.g. "Fixed a bug where ClassName.method_name would add two arguments rather than divide.", not "Fixed addition bug.").
-If the commit is substantial enough, such as a feature addition or an API change, add an entry to `release.notes`, following the style [and syntax](http://daringfireball.net/projects/markdown/) already in place.
 You don't need to add too many details like the date and the author; that's what the version control is for.
 
 Authors
