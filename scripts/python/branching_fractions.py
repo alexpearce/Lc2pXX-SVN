@@ -107,4 +107,3 @@ if __name__ == "__main__":
     config.modes = (config.pKpi, config.pKK, config.ppipi)
     for polarity in config.polarities:
         branching_fractions(polarity, 2011)
-

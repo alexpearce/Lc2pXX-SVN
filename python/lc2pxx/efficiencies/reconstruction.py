@@ -85,4 +85,3 @@ def efficiency_from_bk(mode, polarity, year):
     reco_num = reco_ntuple.GetEntries(truth)
 
     return utilities.efficiency_from_yields(reco_num, acc_num)
-

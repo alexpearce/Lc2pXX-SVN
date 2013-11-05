@@ -108,4 +108,3 @@ def efficiency_no_reco(mode, polarity, year):
     strip_num = strip_ntuple.GetEntries(truth)
 
     return utilities.efficiency_from_yields(strip_num, acc_num)
-

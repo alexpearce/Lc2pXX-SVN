@@ -90,4 +90,3 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     for mode in config.modes:
         fit_systematics(mode, config.magboth, 2011)
-

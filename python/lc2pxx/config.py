@@ -136,4 +136,3 @@ lc_m_high = 2360
 lc_m_window = "({0} < Lambdac_M) && (Lambdac_M < {1})".format(
     lc_m_low, lc_m_high
 )
-

@@ -160,4 +160,3 @@ if __name__ == "__main__":
         for polarity in config.polarities:
             setup_analysis(mode, polarity, 2011, mc=False)
             setup_analysis(mode, polarity, 2011, mc=True)
-

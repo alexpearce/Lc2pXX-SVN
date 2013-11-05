@@ -32,4 +32,3 @@ def configure(year, mc):
         dv.RootInTES = "/Event/Charm"
         # Add a GetIntegratedLuminosity/LumiTuple TTree to output
         dv.Lumi = True
-

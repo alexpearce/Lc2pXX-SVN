@@ -308,4 +308,3 @@ shapes_bkg = {
     "EXP": _exponential,
     "FOP": _first_order_polynomial
 }
-

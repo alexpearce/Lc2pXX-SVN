@@ -107,4 +107,3 @@ def efficiency_mc(mode, polarity, year):
                 num_offline += 1
 
     return utilities.efficiency_from_yields(num_offline, num_stripped)
-

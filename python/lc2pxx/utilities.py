@@ -145,4 +145,3 @@ def efficiency_from_yields(after, before):
     eff = float(after)/float(before)
     err = binomial_error(after, before)
     return ufloat(eff, err)
-

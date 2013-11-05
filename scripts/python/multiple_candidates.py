@@ -73,4 +73,3 @@ def multiple_candidates(mode, polarity, year, selection=True):
 if __name__ == "__main__":
     for mode in config.modes:
         multiple_candidates(mode, config.magboth, 2011, selection=True)
-

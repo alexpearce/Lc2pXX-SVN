@@ -287,4 +287,3 @@ def reflections(mode, polarity, year):
 if __name__ == "__main__":
     for mode in config.modes:
         reflections(mode, config.magboth, 2011)
-

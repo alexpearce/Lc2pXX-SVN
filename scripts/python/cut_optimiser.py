@@ -416,4 +416,3 @@ if __name__ == "__main__":
     fit.
     """
     cut_optimiser(config.pKSDD, config.magboth, 2011)
-

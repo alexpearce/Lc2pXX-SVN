@@ -136,4 +136,3 @@ if __name__ == "__main__":
     ROOT.gROOT.SetBatch(True)
     for mode in config.modes:
         phase_space(mode, config.magboth, 2011)
-

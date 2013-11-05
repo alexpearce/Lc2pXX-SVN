@@ -428,4 +428,3 @@ def get_style(proportional=False, serif=True):
     )
 
     return style
-

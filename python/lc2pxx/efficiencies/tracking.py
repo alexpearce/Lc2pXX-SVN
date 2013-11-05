@@ -216,4 +216,3 @@ def efficiency_for_p_eta(p, eta, tracking_table):
         tracking_table.GetBinContent(bin_i, bin_j),
         tracking_table.GetBinError(bin_i, bin_j)
     )
-

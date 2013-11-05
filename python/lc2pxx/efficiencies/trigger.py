@@ -175,4 +175,3 @@ def efficiency_tistos(mode, polarity, year):
     utilities.delete_temp_file(temp_f_post)
 
     return yields_post[0]/yields_pre[0]
-

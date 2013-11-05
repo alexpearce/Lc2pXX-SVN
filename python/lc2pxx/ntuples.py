@@ -423,4 +423,3 @@ def add_metatree(ntuple):
     if exists:
         ntuple.add_friend(config.metatree_name, path)
     return exists
-

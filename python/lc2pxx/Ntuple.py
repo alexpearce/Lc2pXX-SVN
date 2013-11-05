@@ -186,4 +186,3 @@ class Ntuple(ROOT.TChain):
     def __exit__(self, type, value, traceback):
         """Deletes the file on disk belonging to this ntuple."""
         utilities.delete_temp_file(self.GetFile())
-

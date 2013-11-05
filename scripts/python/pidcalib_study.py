@@ -170,4 +170,3 @@ if __name__ == "__main__":
         pidcalib_study(
             mode, polarity, year, "h2", mode_cut_map[mode]["h2"]
         )
-

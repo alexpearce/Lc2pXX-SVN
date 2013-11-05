@@ -135,4 +135,3 @@ if __name__ == "__main__":
     config.modes = (config.pKpi, config.pKK, config.pphi)
     for polarity in config.polarities:
         phi_study(polarity, 2011)
-

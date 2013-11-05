@@ -57,4 +57,3 @@ class HistoVar:
         self.max = max
         self.units = units
         self.bins = bins or config.num_bins
-

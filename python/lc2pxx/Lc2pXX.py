@@ -478,4 +478,3 @@ class Lc2pphi(Lc2pKK):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pphi")
         super(Lc2pphi, self).__init__(name, polarity, year, mc)
-

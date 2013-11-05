@@ -146,4 +146,3 @@ def efficiency(mode, polarity, year):
             effs[config.magboth] = (up + down)/2
 
     return efficiencies[year][mode][polarity]
-

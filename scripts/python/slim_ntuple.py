@@ -135,4 +135,3 @@ if __name__ == "__main__":
             pidcalib_ntuple(mode, config.magup, 2011)
             pidcalib_ntuple(mode, config.magdown, 2011)
     """
-

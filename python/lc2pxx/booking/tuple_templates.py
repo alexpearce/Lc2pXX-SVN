@@ -146,4 +146,3 @@ def mc_decay_tree_tuple(name, decay, mothers, daughters):
     ]
 
     return tuple
-

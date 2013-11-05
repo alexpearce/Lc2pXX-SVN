@@ -38,4 +38,3 @@ def stripping_sequence_nopids():
     correlations = AlgorithmCorrelationsAlg(Algorithms=conf.selections())
 
     return [conf.sequence(), reporting, correlations]
-
