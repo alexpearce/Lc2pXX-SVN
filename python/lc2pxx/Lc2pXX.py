@@ -91,6 +91,8 @@ class Lc2pXX(Ntuple.Ntuple):
         config.lc_m_window,
         "5e3 < proton_P && proton_P < 1e5",
         "2.0 < proton_ETA && proton_ETA < 4.5",
+        "nTracks > 0",
+        "nTracks < 500",
         "proton_P > 9.3e3",
         "(proton_P > 15.6e3 || proton_ETA < 3.875)",
         "(proton_P < 29.8e3 || proton_ETA > 2.625)",
@@ -105,9 +107,11 @@ class Lc2pXX(Ntuple.Ntuple):
         # so we must implement them too
         proton_P = self.val("proton_P")
         proton_ETA = self.val("proton_ETA")
+        nTracks = self.val("nTracks")
         proton_veto = (
             (5e3 < proton_P < 1e5) and
             (2.0 < proton_ETA < 4.5) and
+            (0 < nTracks < 500) and
             # Vetoes due to lack of PID calibration data in these regions
             (proton_P > 9.3e3) and
             (proton_P > 15.6e3 or proton_ETA < 3.875) and
@@ -163,16 +167,28 @@ class Lc2pXX(Ntuple.Ntuple):
             "proton_ProbNNp",
             "proton_ProbNNk",
             "proton_ProbNNpi",
+            "proton_PIDp",
+            "proton_PIDK",
+            "proton_PIDe",
+            "proton_PIDmu",
             "h1_P",
             "h1_ETA",
             "h1_ProbNNp",
             "h1_ProbNNk",
             "h1_ProbNNpi",
+            "h1_PIDp",
+            "h1_PIDK",
+            "h1_PIDe",
+            "h1_PIDmu",
             "h2_P",
             "h2_ETA",
             "h2_ProbNNp",
             "h2_ProbNNk",
             "h2_ProbNNpi",
+            "h2_PIDp",
+            "h2_PIDK",
+            "h2_PIDe",
+            "h2_PIDmu",
             "mu_L0MuonDecision_TOS",
             "mu_Hlt1TrackMuonDecision_TOS",
             "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
@@ -216,7 +232,9 @@ class Lc2pKpi(Lc2pXX):
             "5e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
             "5e3 < h2_P && h2_P < 1e5",
-            "2.0 < h2_ETA && h2_ETA < 4.5"
+            "2.0 < h2_ETA && h2_ETA < 4.5",
+            "nTracks > 0",
+            "nTracks < 500"
         ])
     )
     def passes_specific_preselection(self):
@@ -226,7 +244,8 @@ class Lc2pKpi(Lc2pXX):
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
         h2_veto = 5e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
-        return h1_veto and h2_veto
+        nTracks = 0 < self.val("nTracks") < 500
+        return h1_veto and h2_veto and nTracks
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
@@ -234,11 +253,18 @@ class Lc2pKpi(Lc2pXX):
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
-        proton = self.val("proton_ProbNNp") > 0.5
-        h1 = self.val("h1_ProbNNk") > 0.5
-        h2 = self.val("h2_ProbNNpi") > 0.7
-        probnn = proton and h1 and h2
-        return probnn
+        if config.use_probnn:
+            proton = self.val("proton_ProbNNp") > 0.5
+            h1 = self.val("h1_ProbNNk") > 0.5
+            h2 = self.val("h2_ProbNNpi") > 0.7
+            pid = proton and h1 and h2
+        else:
+            proton_K = self.val("proton_PIDp") - self.val("proton_PIDK") > 9.
+            proton_pi = self.val("proton_PIDp") > 20.
+            h1 = self.val("h1_PIDK") > 10.
+            h2 = self.val("h2_PIDK") < 10.
+            pid = proton_K and proton_pi and h1 and h2
+        return pid
 
 
 class Lc2pKK(Lc2pXX):
@@ -257,7 +283,9 @@ class Lc2pKK(Lc2pXX):
             "5e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
             "5e3 < h2_P && h2_P < 1e5",
-            "2.0 < h2_ETA && h2_ETA < 4.5"
+            "2.0 < h2_ETA && h2_ETA < 4.5",
+            "nTracks > 0",
+            "nTracks < 500"
         ])
     )
     def passes_specific_preselection(self):
@@ -267,7 +295,8 @@ class Lc2pKK(Lc2pXX):
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
         h2_veto = 5e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
-        return h1_veto and h2_veto
+        nTracks = 0 < self.val("nTracks") < 500
+        return h1_veto and h2_veto and nTracks
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
@@ -275,11 +304,18 @@ class Lc2pKK(Lc2pXX):
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
-        proton = self.val("proton_ProbNNp") > 0.5
-        h1 = self.val("h1_ProbNNk") > 0.5
-        h2 = self.val("h2_ProbNNk") > 0.5
-        probnn = proton and h1 and h2
-        return probnn
+        if config.use_probnn:
+            proton = self.val("proton_ProbNNp") > 0.5
+            h1 = self.val("h1_ProbNNk") > 0.5
+            h2 = self.val("h2_ProbNNk") > 0.5
+            pid = proton and h1 and h2
+        else:
+            proton_K = self.val("proton_PIDp") - self.val("proton_PIDK") > 9.
+            proton_pi = self.val("proton_PIDp") > 20.
+            h1 = self.val("h1_PIDK") > 10.
+            h2 = self.val("h2_PIDK") > 10.
+            pid = proton_K and proton_pi and h1 and h2
+        return pid
 
 
 class Lc2ppipi(Lc2pXX):
@@ -298,7 +334,9 @@ class Lc2ppipi(Lc2pXX):
             "5e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
             "5e3 < h2_P && h2_P < 1e5",
-            "2.0 < h2_ETA && h2_ETA < 4.5"
+            "2.0 < h2_ETA && h2_ETA < 4.5",
+            "nTracks > 0",
+            "nTracks < 500"
         ])
     )
     def passes_specific_preselection(self):
@@ -308,7 +346,8 @@ class Lc2ppipi(Lc2pXX):
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
         h2_veto = 5e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
-        return h1_veto and h2_veto
+        nTracks = 0 < self.val("nTracks") < 500
+        return h1_veto and h2_veto and nTracks
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
@@ -319,11 +358,18 @@ class Lc2ppipi(Lc2pXX):
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
-        proton = self.val("proton_ProbNNp") > 0.5
-        h1 = self.val("h1_ProbNNpi") > 0.7
-        h2 = self.val("h2_ProbNNpi") > 0.7
-        probnn = proton and h1 and h2
-        return probnn
+        if config.use_probnn:
+            proton = self.val("proton_ProbNNp") > 0.5
+            h1 = self.val("h1_ProbNNpi") > 0.7
+            h2 = self.val("h2_ProbNNpi") > 0.7
+            pid = proton and h1 and h2
+        else:
+            proton_K = self.val("proton_PIDp") - self.val("proton_PIDK") > 9.
+            proton_pi = self.val("proton_PIDp") > 20.
+            h1 = self.val("h1_PIDK") < 0.
+            h2 = self.val("h2_PIDK") < 0.
+            pid = proton_K and proton_pi and h1 and h2
+        return pid
 
 
 class Lc2pKSLL(Lc2pXX):
@@ -344,7 +390,9 @@ class Lc2pKSLL(Lc2pXX):
             "5e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
             "5e3 < h2_P && h2_P < 1e5",
-            "2.0 < h2_ETA && h2_ETA < 4.5"
+            "2.0 < h2_ETA && h2_ETA < 4.5",
+            "nTracks > 0",
+            "nTracks < 500"
         ])
     )
     def passes_specific_preselection(self):
@@ -354,7 +402,8 @@ class Lc2pKSLL(Lc2pXX):
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
         h2_veto = 5e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
-        return h1_veto and h2_veto
+        nTracks = 0 < self.val("nTracks") < 500
+        return h1_veto and h2_veto and nTracks
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
@@ -387,7 +436,9 @@ class Lc2pKSDD(Lc2pXX):
             "5e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
             "5e3 < h2_P && h2_P < 1e5",
-            "2.0 < h2_ETA && h2_ETA < 4.5"
+            "2.0 < h2_ETA && h2_ETA < 4.5",
+            "nTracks > 0",
+            "nTracks < 500"
         ])
     )
     def passes_specific_preselection(self):
@@ -399,7 +450,8 @@ class Lc2pKSDD(Lc2pXX):
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
         h2_veto = 5e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
-        return h1_veto and h2_veto
+        nTracks = 0 < self.val("nTracks") < 500
+        return h1_veto and h2_veto and nTracks
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""

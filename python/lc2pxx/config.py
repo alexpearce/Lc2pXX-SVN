@@ -114,6 +114,10 @@ stripping_years = {
     2012: "20"
 }
 
+# If True, use ProbNN PID variables offline,
+# else use DLL
+use_probnn = True
+
 # Important paths
 _home_dir = _get_environment_var("AFS")
 _work_dir = _get_environment_var("WORK")
