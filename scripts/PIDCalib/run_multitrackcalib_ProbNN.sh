@@ -9,7 +9,8 @@ signal_tree=DecayTree
 # stripping=17
 
 # Performance histograms directory
-perf_hists="output/$stripping"
+perf_hists="output_ProbNN/$stripping"
+mkdir -p $perf_hists
 
 # Cuts
 K="ProbNNK > 0.5"
@@ -48,16 +49,15 @@ run_multitrackcalib() {
     python PerformMultiTrackCalib.py \
         -i="$perf_hists" \
         -x=P -y=ETA -z=nTracks \
-        --use-sWeights --sWeightVarName=signal_sw \
         -q \
         -s P Lc2pXX \
         -s Pi Lc2pXX \
         -s K Lc2pXX \
         "$stripping" \
         "$2" \
-        "$signal_base/PIDCalib-$1-2011-20r1-$2-mc.root" \
+        "$signal_base/selected-$1-2011-17b-$2.root" \
         "$signal_tree" \
-        "CalibTree-$1-2011-20r1-$2-mc.root" \
+        "$perf_hists/CalibTree-$1-2011-17b-$2-mc.root" \
         "$proton_P" \
         "$3" \
         "$4"
