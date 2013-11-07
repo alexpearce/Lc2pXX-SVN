@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Reference (our signal) location
-signal_base=$HOME/cmtuser/Urania_v1r1/Phys/Lc2pXX/scripts/python/output
+signal_base=$HOME/cmtuser/Urania_v2r1/Phys/Lc2pXX/scripts/python/output
 signal_tree=DecayTree
 # For S20r1:
 # stripping=20r1_MCTuneV2
@@ -44,7 +44,7 @@ run_makeperfhists() {
 # $3 -- h1 track
 # $4 -- h2 track
 run_multitrackcalib() {
-    # To change to S17b, change 20r1 in the signal path to 17b
+    # To change to S17b, change 20r1 in the signal and output paths to 17b
     python PerformMultiTrackCalib.py \
         -i="$perf_hists" \
         -x=P -y=ETA -z=nTracks \
@@ -57,7 +57,7 @@ run_multitrackcalib() {
         "$2" \
         "$signal_base/PIDCalib-$1-2011-20r1-$2-mc.root" \
         "$signal_tree" \
-        "$1_$2.root" \
+        "CalibTree-$1-2011-20r1-$2-mc.root" \
         "$proton_P" \
         "$3" \
         "$4"

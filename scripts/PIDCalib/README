@@ -1,0 +1,19 @@
+PIDCalib
+========
+
+The scripts in this directory are for creating the PID performance histograms and the per-event PID efficiencies (weights).
+
+To be able to run them, setup the Urania environment, clone the required repos, and build:
+
+    $ SetupUrania v2r1 --build-env
+    $ getpack PIDCalib/CalibDataScripts v4r3
+    $ getpack PIDCalib/PIDPerfTools v5r4
+    $ getpack PIDCalib/PIDPerfScripts v6r1
+    $ cd PIDCalib/PIDPerfScripts/cmt
+    $ cmt br cmt make
+
+Finally, refresh the environment:
+
+    $ SetupUrania v2r1
+
+You can then symlink the files in these directory in to `$PIDPERFSCRIPTSROOT/scripts/python/MultiTrack` and run them.
