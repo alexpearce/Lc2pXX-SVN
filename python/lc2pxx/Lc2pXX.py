@@ -193,7 +193,8 @@ class Lc2pXX(Ntuple.Ntuple):
             "mu_Hlt1TrackMuonDecision_TOS",
             "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
             "Lambdab_Hlt2TopoMu3BodyBBDTDecision_TOS",
-            "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS"
+            "Lambdab_Hlt2TopoMu4BodyBBDTDecision_TOS",
+            "nTracks"
         ]
         if self.mc:
             # Background categories described in IBackgroundCategory
