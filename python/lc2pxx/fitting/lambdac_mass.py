@@ -107,10 +107,12 @@ def fit(ntuple, workspace, shapes, bins=0):
         # sPlot requires all non-yields parameters of the model be constant
         vars = workspace.allVars()
         it = vars.createIterator()
+        var = it.Next()
         yield_vars = (consts["yield_sig"], consts["yield_bkg"])
-        while it.Next():
-            if it.GetName() not in yield_vars:
-                it.setConstant()
+        while var:
+            if var.GetName() not in yield_vars:
+                var.setConstant()
+            var = it.Next()
         sweights = ROOT.RooStats.SPlot(
             "sData",
             "sData",
