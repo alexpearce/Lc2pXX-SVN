@@ -23,7 +23,7 @@ consts = {
     "sWeights": "sWeights"
 }
 
-def fit(ntuple, workspace, shapes, bins=0):
+def fit(ntuple, workspace, shapes, bins=0, weight=""):
     """Fits an ntuple to the Lambda_c mass spectrum.
 
     Adds all PDF and variables to the workspace, along with the fit result.
@@ -36,6 +36,9 @@ def fit(ntuple, workspace, shapes, bins=0):
         1 -- Background, one of (FOP, EXP)
     bins -- Performs a binned fit, if bins != 0, to that number of bins
         (default 0)
+    weight -- String of the variable in ntuple to act as per-event weights.
+        The caller is responsible for having added the var to the workspace.
+        (default "", no weighting)
     """
     log.info("Fitting Lc mass")
 
@@ -43,37 +46,49 @@ def fit(ntuple, workspace, shapes, bins=0):
     shape_bkg = shapes[1]
     entries = ntuple.GetEntries()
 
+    var_name = consts["var_name"]
+    data_name = consts["data"]
+
     # Add the mass variable and data to the workspace
     workspace.factory("{0}[{1}, {2}]".format(
-        consts["var_name"], config.lc_m_low, config.lc_m_high
+        var_name, config.lc_m_low, config.lc_m_high
     ))
-    workspace.var(consts["var_name"]).SetTitle("m({0})".format(
+    workspace.var(var_name).SetTitle("m({0})".format(
         utilities.latex_mode(ntuple.mode)
     ))
-    workspace.var(consts["var_name"]).setUnit("MeV/#font[12]{c}^{2}")
+    workspace.var(var_name).setUnit("MeV/#font[12]{c}^{2}")
+    # Construct RooArgSet of variables needed for the fit
+    if weight:
+        vars = ROOT.RooArgList(
+            workspace.var(var_name),
+            workspace.var(weight)
+        )
+    else:
+        vars = ROOT.RooArgList(workspace.var(var_name))
     if bins:
         ntuple.Draw("{0}>>h1({1}, {2}, {3})".format(
-            consts["var_name"],
+            var_name,
             bins,
             config.lc_m_low,
             config.lc_m_high
-        ))
+        ), weight)
         h1 = ROOT.gDirectory.Get("h1")
-        data = ROOT.RooDataHist(consts["data"], consts["data"],
-            ROOT.RooArgList(workspace.var(consts["var_name"])), h1)
+        data = ROOT.RooDataHist(data_name, data_name, vars, h1)
     else:
-        data = ROOT.RooDataSet(consts["data"], consts["data"], ntuple,
-            ROOT.RooArgSet(workspace.var(consts["var_name"])))
+        data = ROOT.RooDataSet(
+            data_name, data_name, ntuple, ROOT.RooArgSet(vars), "", weight
+        )
+
     # Workaround for `import` being a Python keyword
     workspace_import = getattr(workspace, "import")
     workspace_import(data)
 
     # Add variables to hold the yields
     workspace.factory("{0}[{1}, 0, {2}]".format(
-        consts["yield_sig"], entries / 2, entries)
+        consts["yield_sig"], entries / 2, entries*10)
     )
     workspace.factory("{0}[{1}, 0, {2}]".format(
-        consts["yield_bkg"], entries / 2, entries)
+        consts["yield_bkg"], entries / 2, entries*10)
     )
 
     # Add the shapes to the workspace
@@ -91,7 +106,7 @@ def fit(ntuple, workspace, shapes, bins=0):
 
     # Perform the fit, adding the RooFitResult to the workspace
     fit_result = workspace.pdf(consts["pdf_tot"]).fitTo(
-        workspace.data(consts["data"]), ROOT.RooFit.Save(True)
+        workspace.data(data_name), ROOT.RooFit.Save(True)
     )
     workspace_import(fit_result, consts["fit_result"])
 
@@ -116,7 +131,7 @@ def fit(ntuple, workspace, shapes, bins=0):
         sweights = ROOT.RooStats.SPlot(
             "sData",
             "sData",
-            workspace.data(consts["data"]),
+            workspace.data(data_name),
             workspace.pdf(consts["pdf_tot"]),
             ROOT.RooArgList(
                 workspace.var(yield_vars[0]),
