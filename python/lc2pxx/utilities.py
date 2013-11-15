@@ -85,7 +85,7 @@ def save_to_file(filename, objects):
 def file_exists(path):
     """Returns True if anything exists at the given path."""
     # http://cern.ch/go/9rxQ
-    return os.path.exists(path)
+    return os.path.exists(os.path.expandvars(path))
 
 
 def latex_mode(mode):
