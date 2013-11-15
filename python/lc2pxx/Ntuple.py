@@ -90,10 +90,13 @@ class Ntuple(ROOT.TChain):
         self.setup_branches()
         return ret
 
-    def add_friend(self, tree_name, path):
+    def add_friend(self, tree_name, path="", tree=""):
         """Add a friend tree. Superseeds TChain.AddFriend."""
         log.info("Adding friend tree {0} to Ntuple".format(path))
-        ret = self.AddFriend(tree_name, path)
+        if path:
+            ret = self.AddFriend(tree_name, path)
+        elif tree:
+            ret = self.AddFriend(tree, tree_name)
         self.setup_branches()
         return ret
 

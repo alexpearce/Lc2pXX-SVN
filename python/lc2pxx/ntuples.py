@@ -421,5 +421,5 @@ def add_metatree(ntuple):
     path = metatree_path(ntuple)
     exists = utilities.file_exists(path)
     if exists:
-        ntuple.add_friend(config.metatree_name, path)
+        ntuple.add_friend(config.metatree_name, path=path)
     return exists
