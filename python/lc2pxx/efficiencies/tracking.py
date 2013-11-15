@@ -17,8 +17,8 @@ def efficiency(mode, polarity, year):
     This assumption needs to be shown.
     The tracking table used is ratio2011S20MC17 (http://cern.ch/go/r7sl).
     """
-    tracking_table_f = ROOT.TFile("{0}/tracking_table.root".format(
-        config.output_dir
+    tracking_table_f = ROOT.TFile("{0}/tracking-table-{1}.root".format(
+        config.output_dir, config.stripping_years[year]
     ))
     tracking_table = tracking_table_f.Get("Ratio")
 
@@ -53,8 +53,8 @@ def efficiency_smeared(mode, polarity, year, toys=30):
     This process is repeated many times, with the final efficiency being
     the mean of the experiments, and the error the RMS.
     """
-    tracking_table_f = ROOT.TFile("{0}/tracking_table.root".format(
-        config.output_dir
+    tracking_table_f = ROOT.TFile("{0}/tracking-table-{1}.root".format(
+        config.output_dir, config.stripping_years[year]
     ))
     tracking_table = tracking_table_f.Get("Ratio")
 
