@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Reference (our signal) location
-signal_base=$HOME/cmtuser/Urania_v2r1/Phys/Lc2pXX/scripts/python/output
+signal_base=$WORK/OutputBackup/output_DLL
 signal_tree=DecayTree
 # For S20r1:
 # stripping=20r1_MCTuneV2
@@ -15,8 +15,11 @@ mkdir -p $perf_hists
 # Cuts
 K="DLLK > 10"
 Pi="DLLK < 10"
+# ppipi pion cut is tighter than pKpi
+# S20/17b ppipi cuts are different, but offline are equal
 Pi_ppipi="DLLK < 0"
-P="DLLpK > 9 && DLLp > 20"
+P="DLLp > 20 && DLLpK > 9"
+
 # Ntuple particle branches
 h1_K="[h1,K,$K]"
 h2_K="[h2,K,$K]"
@@ -52,21 +55,18 @@ run_multitrackcalib() {
     python PerformMultiTrackCalib.py \
         -i="$perf_hists" \
         -x=P -y=ETA -z=nTracks \
-        --noBinLimitCheck \
         -q \
         -s P Lc2pXX \
         -s Pi Lc2pXX \
         -s K Lc2pXX \
         "$stripping" \
         "$2" \
-        "$signal_base/selected-$1-2011-17b-$2.root" \
+        "$signal_base/selected-$1-2011-20r1-$2.root" \
         "$signal_tree" \
-        "$perf_hists/CalibTree-$1-2011-17b-$2.root" \
+        "$perf_hists/CalibTree-$1-2011-20r1-$2.root" \
         "$proton_P" \
         "$3" \
         "$4"
-    # So we can read the values before the next call
-    sleep 10
 }
 
 run_makeperfhists MagUp   "K"  "[$K]"
@@ -87,5 +87,5 @@ run_multitrackcalib pKK   MagDown "$h1_K"  "$h2_K"
 run_multitrackcalib ppipi MagUp   "$h1_Pi_ppipi" "$h2_Pi_ppipi"
 run_multitrackcalib ppipi MagDown "$h1_Pi_ppipi" "$h2_Pi_ppipi"
 
-run_multitrackcalib pphi MagUp   "$h1_K" "$h2_K"
-run_multitrackcalib pphi MagDown "$h1_K" "$h2_K"
+# run_multitrackcalib pphi MagUp   "$h1_K" "$h2_K"
+# run_multitrackcalib pphi MagDown "$h1_K" "$h2_K"
