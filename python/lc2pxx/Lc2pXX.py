@@ -412,11 +412,7 @@ class Lc2pKSLL(Lc2pXX):
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
-        proton = self.val("proton_ProbNNp") > 0.25
-        h1 = self.val("h1_ProbNNpi") > 0.3
-        h2 = self.val("h2_ProbNNpi") > 0.3
-        probnn = proton and (h1 or h2)
-        return probnn
+        return True
 
 
 class Lc2pKSDD(Lc2pXX):
@@ -460,11 +456,7 @@ class Lc2pKSDD(Lc2pXX):
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
-        proton = self.val("proton_ProbNNp") > 0.25
-        h1 = self.val("h1_ProbNNpi") > 0.3
-        h2 = self.val("h2_ProbNNpi") > 0.3
-        probnn = proton and (h1 or h2)
-        return probnn
+        return True
 
 
 class Lc2pphi(Lc2pKK):
