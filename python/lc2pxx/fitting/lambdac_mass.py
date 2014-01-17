@@ -13,7 +13,6 @@ from lc2pxx import config, utilities
 # String constants
 consts = {
     "data": "data",
-    "var_name": "Lambdac_M",
     "pdf_sig": "signal_pdf",
     "pdf_bkg": "background_pdf",
     "pdf_tot": "total_pdf",
@@ -41,36 +40,40 @@ def fit(ntuple, workspace, shapes, bins=0, weight=""):
         (default "", no weighting)
     """
     log.info("Fitting Lc mass")
+    # Workaround for `import` being a Python keyword
+    workspace_import = getattr(workspace, "import")
 
     shape_sig = shapes[0]
     shape_bkg = shapes[1]
     entries = ntuple.GetEntries()
 
-    var_name = consts["var_name"]
+    # Add the fit variable as a string to the workspace, so it can be fetched
+    workspace_import(ROOT.TObjString(ntuple.Lc_M_fit_var), "fit_var")
+    fit_var = workspace.obj("fit_var").GetString().Data()
     data_name = consts["data"]
 
     # Add the mass variable and data to the workspace
     workspace.factory("{0}[{1}, {2}]".format(
-        var_name, config.lc_m_low, config.lc_m_high
+        fit_var, ntuple.Lc_M_lo, ntuple.Lc_M_hi
     ))
-    workspace.var(var_name).SetTitle("m({0})".format(
+    workspace.var(fit_var).SetTitle("m({0})".format(
         utilities.latex_mode(ntuple.mode)
     ))
-    workspace.var(var_name).setUnit("MeV/#font[12]{c}^{2}")
+    workspace.var(fit_var).setUnit("MeV/#font[12]{c}^{2}")
     # Construct RooArgSet of variables needed for the fit
     if weight:
         vars = ROOT.RooArgList(
-            workspace.var(var_name),
+            workspace.var(fit_var),
             workspace.var(weight)
         )
     else:
-        vars = ROOT.RooArgList(workspace.var(var_name))
+        vars = ROOT.RooArgList(workspace.var(fit_var))
     if bins:
         ntuple.Draw("{0}>>h1({1}, {2}, {3})".format(
-            var_name,
+            fit_var,
             bins,
-            config.lc_m_low,
-            config.lc_m_high
+            ntuple.Lc_M_lo,
+            ntuple.Lc_M_hi
         ), weight)
         h1 = ROOT.gDirectory.Get("h1")
         data = ROOT.RooDataHist(data_name, data_name, vars, h1)
@@ -79,8 +82,6 @@ def fit(ntuple, workspace, shapes, bins=0, weight=""):
             data_name, data_name, ntuple, ROOT.RooArgSet(vars), "", weight
         )
 
-    # Workaround for `import` being a Python keyword
-    workspace_import = getattr(workspace, "import")
     workspace_import(data)
 
     # Add variables to hold the yields
@@ -154,7 +155,7 @@ def yields(workspace):
         log.error("Cannot calculate yields, PDFs have not been fitted")
         return
 
-    x = workspace.var(consts["var_name"])
+    x = workspace.var(workspace.obj("fit_var").GetString().Data())
     x_set = ROOT.RooArgSet(x)
     mean = workspace.var("mu").getVal()
     width_var = workspace.var("sigma")
@@ -224,10 +225,10 @@ def _double_crystal_ball(workspace):
     workspace.factory("n[2, 1, 10]")
     workspace.factory("RooCBShape::pdf_cb_one("
         "{0}, mu, sigma_one, alpha, n"
-    ")".format(consts["var_name"]))
+    ")".format(workspace.obj("fit_var")))
     workspace.factory("RooCBShape::pdf_cb_two("
         "{0}, mu, sigma_two, alpha, n"
-    ")".format(consts["var_name"]))
+    ")".format(workspace.obj("fit_var")))
     workspace.factory("SUM::{0}("
         "pdf_cb_one, num_cb[0.5, 0, 1]*pdf_cb_two"
     ")".format(consts["pdf_sig"]))
@@ -246,10 +247,10 @@ def _double_gaussian(workspace):
     workspace.factory("sigma_two[7, 4, 15]")
     workspace.factory("RooGaussian::pdf_gauss_one("
         "{0}, mu, sigma_one"
-    ")".format(consts["var_name"]))
+    ")".format(workspace.obj("fit_var")))
     workspace.factory("RooGaussian::pdf_gauss_two("
         "{0}, mu, sigma_two"
-    ")".format(consts["var_name"]))
+    ")".format(workspace.obj("fit_var")))
     workspace.factory("SUM::{0}("
         "pdf_gauss_one, num_gauss[0.5, 0, 1]*pdf_gauss_two"
     ")".format(consts["pdf_sig"]))
@@ -262,7 +263,7 @@ def _single_gaussian(workspace):
     workspace.factory("sigma[4, 0, 8]")
     workspace.factory("RooGaussian::{0}("
         "{1}, mu, sigma"
-    ")".format(consts["pdf_sig"], consts["var_name"]))
+    ")".format(consts["pdf_sig"], workspace.obj("fit_var")))
 
 
 def _single_crystal_ball(workspace):
@@ -274,7 +275,7 @@ def _single_crystal_ball(workspace):
     workspace.factory("n[2, 1, 10]")
     workspace.factory("RooCBShape::{0}("
         "{1}, mu, sigma, alpha, n"
-    ")".format(consts["pdf_sig"], consts["var_name"]))
+    ")".format(consts["pdf_sig"], workspace.obj("fit_var")))
 
 
 def _gaussian_crystal_ball(workspace):
@@ -287,10 +288,10 @@ def _gaussian_crystal_ball(workspace):
     workspace.factory("n[2, -10, 10]")
     workspace.factory("RooGaussian::pdf_gauss_one("
         "{0}, mu, sigma_one"
-    ")".format(consts["var_name"]))
+    ")".format(workspace.obj("fit_var")))
     workspace.factory("RooCBShape::pdf_cb_two("
         "{0}, mu, sigma_two, alpha, n"
-    ")".format(consts["var_name"]))
+    ")".format(workspace.obj("fit_var")))
     workspace.factory("SUM::{0}("
         "pdf_gauss_one, num_gauss[0.5, 0, 1]*pdf_cb_two"
     ")".format(consts["pdf_sig"]))
@@ -302,7 +303,7 @@ def _exponential(workspace):
     workspace.factory("lambda[-0.1, -0.5, 0.5]")
     workspace.factory("RooExponential::{0}("
         "{1}, lambda"
-    ")".format(consts["pdf_bkg"], consts["var_name"]))
+    ")".format(consts["pdf_bkg"], workspace.obj("fit_var")))
 
 
 def _first_order_polynomial(workspace):
@@ -310,7 +311,7 @@ def _first_order_polynomial(workspace):
     log.info("Adding O(1) polynomial background PDF to workspace")
     workspace.factory("RooChebychev::{0}("
         "{1}, {{a0[-1, 1]}}"
-    ")".format(consts["pdf_bkg"], consts["var_name"]))
+    ")".format(consts["pdf_bkg"], workspace.obj("fit_var")))
 
 
 shapes_sig = {

@@ -195,7 +195,7 @@ def plot_variable_2d(variables, data_store):
     return canvas
 
 
-def plot_fit(workspace, pdfs, var, bins=70, pull=True):
+def plot_fit(workspace, pdfs, bins=70, pull=True):
     """Return a TCanvas of the data and pdfs in workspace.
 
     Assumes that the first value in pdfs is the total fit PDF.
@@ -205,14 +205,15 @@ def plot_fit(workspace, pdfs, var, bins=70, pull=True):
         `[("pdf_name_in_workspace", "Pretty Legend Name")...]`
     var -- String of the variable to to plotted, as named in the workspace
     """
-    log.info("Plotting variable {0}".format(var))
+    fit_var = workspace.obj("fit_var").GetString().Data()
+    log.info("Plotting variable {0}".format(fit_var))
 
     get_style().cd()
 
     # Force exponents
     ROOT.TGaxis.SetMaxDigits(3)
 
-    x = workspace.var(var)
+    x = workspace.var(fit_var)
     total_pdf = workspace.pdf(pdfs[0][0])
     frame = x.frame()
 

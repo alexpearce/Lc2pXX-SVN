@@ -232,7 +232,8 @@ def create_metatree(ntuple):
     background_sw = np.zeros(1)
     sum_sw = np.zeros(1)
     # Bind branches to pointers
-    t.Branch("Lambdac_M", lc_m, "Lambdac_M/D")
+    fit_var = ntuple.Lc_M_fit_var
+    t.Branch(fit_var, lc_m, "{0}/D".format(fit_var))
     t.Branch("random", random, "random/D")
     t.Branch("accepted", accepted, "accepted/I")
     t.Branch("triggered", triggered, "triggered/I")
@@ -263,7 +264,7 @@ def create_metatree(ntuple):
     # Dataset holding the sWeights and Lc_M variables
     sweights_ds = sweights.GetSDataSet()
     sw_argset = sweights_ds.get()
-    sw_lc_m = sw_argset.find("Lambdac_M")
+    sw_lc_m = sw_argset.find(fit_var)
     sw_sig = sw_argset.find("{0}_sw".format(
         fitting.lambdac_mass.consts["yield_sig"]
     ))
@@ -295,7 +296,7 @@ def create_metatree(ntuple):
     # Fill the ouput tree
     print "Filling meta friend tree"
     for entry in ntuple:
-        lc_m[0] = ntuple.val("Lambdac_M")
+        lc_m[0] = ntuple.val(fit_var)
         random[0] = generator.Rndm()
         accepted[0] = ntuple.passes_preselection()
         triggered[0] = ntuple.passes_trigger()

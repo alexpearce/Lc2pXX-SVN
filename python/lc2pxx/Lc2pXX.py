@@ -2,8 +2,19 @@ import logging as log
 
 from lc2pxx import config, utilities, Ntuple
 
+
 class Lc2pXX(Ntuple.Ntuple):
     """Ntuple representing all Lambda_c to proton h^+ h^- decays."""
+    # Mode-specific selection branches to activate
+    # Should be filled by subclasses, if required
+    mode_selection_branches = []
+    # The variable describing the Lambda_c mass spectrum
+    # Can be redefined by subclasses to use, for example, DTF variables
+    Lc_M_fit_var = "Lambdac_M"
+    # Fit range for the Lambda_c mass spectrum
+    # It's in this file, rather than the fitter, as it's used in the selection
+    Lc_M_lo = 2220.
+    Lc_M_hi = 2360.
     def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new Lc2pXX object.
 
@@ -19,6 +30,12 @@ class Lc2pXX(Ntuple.Ntuple):
         self.polarity = polarity
         self.stripping = config.stripping_years[self.year]
         self.mc = mc
+
+        # Append the Lambdac mass window preselection,
+        # which requires an instance of the class
+        self.preselection += "&& ({1} < {0} && {0} < {2})".format(
+            self.Lc_M_fit_var, self.Lc_M_lo, self.Lc_M_hi
+        )
 
     @classmethod
     def from_ntuple(cls, ntuple):
@@ -88,7 +105,6 @@ class Lc2pXX(Ntuple.Ntuple):
     #         preselection = "(0) && (cut<5)".format(Lc2pXX.preselection)
     # It is used in the creation of the meta friend tree.
     preselection = "&&".join([
-        config.lc_m_window,
         "5e3 < proton_P && proton_P < 1e5",
         "2.0 < proton_ETA && proton_ETA < 4.5",
         "nTracks > 0",
@@ -101,7 +117,7 @@ class Lc2pXX(Ntuple.Ntuple):
     def passes_preselection(self):
         """Return True if current event passes preselection cuts."""
         # Lc mass window cut prevents poor fitting due to outliers
-        lc_mass = config.lc_m_low < self.val("Lambdac_M") < config.lc_m_high
+        lc_mass = self.Lc_M_lo < self.val(self.Lc_M_fit_var) < self.Lc_M_hi
         # Proton momenta 5 < p < 100 GeV, eta 2 < n < 4.5
         # These are the limits imposed on the PID calibration samples,
         # so we must implement them too
@@ -158,8 +174,10 @@ class Lc2pXX(Ntuple.Ntuple):
 
     def activate_selection_branches(self):
         """Activate all branches required for selection."""
-        branches = [
+        branches = self.mode_selection_branches + [
             "Lambdac_M",
+            # Doesn't matter if it's a duplicate, so add it just in case
+            self.Lc_M_fit_var,
             "mu_P",
             "mu_ETA",
             "proton_P",
@@ -378,6 +396,10 @@ class Lc2pKSLL(Lc2pXX):
     mode = config.pKSLL
     shapes_preselection = ("DGS", "EXP")
     shapes_postselection = ("DGS", "EXP")
+    Lc_M_fit_var = "Lambdab_DTF_Lambdac_M"
+    mode_selection_branches = [
+        "Lambdab_DTF_CHI2"
+    ]
     def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKSLL")
@@ -404,7 +426,8 @@ class Lc2pKSLL(Lc2pXX):
         h2_veto = 5e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
         nTracks = 0 < self.val("nTracks") < 500
-        return h1_veto and h2_veto and nTracks
+        fit_quality = self.val("Lambdab_DTF_CHI2") >= 0
+        return h1_veto and h2_veto and nTracks and fit_quality
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
@@ -420,6 +443,10 @@ class Lc2pKSDD(Lc2pXX):
     mode = config.pKSDD
     shapes_preselection = ("DGS", "EXP")
     shapes_postselection = ("DGS", "EXP")
+    Lc_M_fit_var = "Lambdab_DTF_Lambdac_M"
+    mode_selection_branches = [
+        "Lambdab_DTF_CHI2"
+    ]
     def __init__(self, name, polarity, year, mc=False):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pKSDD")
@@ -448,7 +475,8 @@ class Lc2pKSDD(Lc2pXX):
         h2_veto = 5e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
         nTracks = 0 < self.val("nTracks") < 500
-        return h1_veto and h2_veto and nTracks
+        fit_quality = self.val("Lambdab_DTF_CHI2") >= 0
+        return h1_veto and h2_veto and nTracks and fit_quality
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
