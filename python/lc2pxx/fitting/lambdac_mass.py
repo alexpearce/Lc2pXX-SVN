@@ -170,13 +170,13 @@ def yields(workspace):
         limit_lo,
         limit_hi
     ))
-    range = "signalRegion"
-    x.setRange(range, limit_lo, limit_hi)
+    region = "signalRegion"
+    x.setRange(region, limit_lo, limit_hi)
     int_sig = workspace.pdf(consts["pdf_sig"]).createIntegral(
-        x_set, x_set, range
+        x_set, x_set, region
     ).getVal()
     int_bkg = workspace.pdf(consts["pdf_bkg"]).createIntegral(
-        x_set, x_set, range
+        x_set, x_set, region
     ).getVal()
 
     yield_sig_var = workspace.var(consts["yield_sig"])
