@@ -88,7 +88,7 @@ def plot_variable(variable, data_stores):
             "{0}>>h{1}({2},{3},{4})".format(
                 variable.name,
                 uniq,
-                config.num_bins,
+                variable.bins,
                 variable.min,
                 variable.max
             ),
