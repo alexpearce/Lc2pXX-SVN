@@ -1,7 +1,4 @@
-from Gaudi.Configuration import *
-from Configurables import DaVinci, LoKiSvc
-
-from lc2pxx import config
+from Configurables import DaVinci
 
 def configure(year, mc):
     """General configuration of DaVinci options.
@@ -10,12 +7,9 @@ def configure(year, mc):
     year -- One of lc2pxx.config.years
     mc -- True if booking MC ntuples, else false
     """
-    # No enormous LoKi messages
-    LoKiSvc().Welcome = False
-
     dv = DaVinci()
     # Output ntuple name
-    dv.TupleFile = "{0}.root".format(config.ntuple_name)
+    dv.TupleFile = "DVntuple.root"
     # Process all events
     dv.EvtMax = -1
     # Print status every 1000 events

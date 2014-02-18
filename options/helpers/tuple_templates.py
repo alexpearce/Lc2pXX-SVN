@@ -1,40 +1,36 @@
-from Configurables import (
-    DecayTreeTuple,
-    MCDecayTreeTuple
-)
 from DecayTreeTuple.Configuration import *
 
-def decay_tree_tuple(name, decay, mothers, daughters, inputs, mc=False):
+def decay_tree_tuple(name, decay, mothers, daughters, inputs, mc):
     """Return a configured DecayTreeTuple instance.
 
     A DecayTreeTuple is configured with the given decay descriptor.
     The mothers dictionary is used to give exclusive tools to vertices,
-    and it should be, as daughters, a dictionary of tuple branche names
+    and it should be, as daughters, a dictionary of tuple branch names
     to branch descriptors. A typical call to this method might look like
         decay_tree_tuple(
             "TupleLc2pKK",
-            "[Lambda_c+ -> ^p+ ^K- ^K+]cc",
+            "[Lambda_c+ -> ^p+ ^K- ^K+]CC",
             {
-                "Lambdac": "[Lambda_c+]cc: [Lambda_c+ -> p+ %s %s]cc"
+                "Lambdac": "[Lambda_c+ -> p+ K- K+]CC"
             },
             {
-                "h1": "[Lambda_c+ -> p+ ^K- K+]cc",
-                "h2": "[Lambda_c+ -> p+ K- ^K+]cc",
-                "proton": "[Lambda_c+ -> ^p+ K- K+]cc"
+                "h1": "[Lambda_c+ -> p+ ^K- K+]CC",
+                "h2": "[Lambda_c+ -> p+ K- ^K+]CC",
+                "proton": "[Lambda_c+ -> ^p+ K- K+]CC"
             },
             "Phys/MyStrippingLine/Particles"
         )
     Keyword arguments:
-    name -- TFile folder the DecayTree ntuple will be saved to
+    name -- TDirectory the DecayTree ntuple will be saved to
     decay -- LoKi-style decay finder (http://cern.ch/go/9bHt)
     mothers -- Branch descriptors to be added to the tuple as mothers,
         decaying particles
     daughters -- Branch descriptors to be added to the tuple as daughters,
         products of mother decays which are not themselves mothers
-    branches -- Dictionary of branches to store in the ntuple
     inputs -- str or list of strs, as the value of DecayTreeTuple.Inputs
     mc -- If True, include some useful MC tuple tools
     """
+    # Define tuple tools to add
     tuple_tools = [
         "TupleToolEventInfo",
         "TupleToolGeometry",
@@ -47,25 +43,10 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs, mc=False):
         tuple_tools += [
             "TupleToolMCTruth"
         ]
-    triggers = [
-        "L0HadronDecision",
-        "L0MuonDecision",
-        "Hlt1TrackAllL0Decision",
-        "Hlt1SingleMuonNoIPDecision",
-        "Hlt1SingleMuonHighPTDecision",
-        "Hlt1TrackMuonDecision",
-        "Hlt2TopoMu2BodyBBDTDecision",
-        "Hlt2TopoMu3BodyBBDTDecision",
-        "Hlt2TopoMu4BodyBBDTDecision",
-        "Hlt2Topo2BodyBBDTDecision",
-        "Hlt2Topo3BodyBBDTDecision",
-        "Hlt2Topo4BodyBBDTDecision",
-        "Hlt2SingleMuonDecision",
-        "Hlt2CharmHadD2HHHDecision"
-    ]
+
+    # Extra variables, added using LoKi hybrid tuple tools
     basic_loki_vars = {
         "ETA": "ETA",
-        "Loki_MIPCHI2DV": "MIPCHI2DV(PRIMARY)",
         "Loki_BPVIPCHI2": "BPVIPCHI2()"
     }
     mother_loki_vars = {
@@ -83,30 +64,28 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs, mc=False):
     }
 
     # Template DecayTreeTuple
-    tuple_template = DecayTreeTuple(name)
+    t = DecayTreeTuple(name)
     # DecayTreeTuple.Inputs takes a list, but inputs might be a string
     # So try assign it, but wrap it in a list if we get a ValueError
     try:
-        tuple_template.Inputs = inputs
+        t.Inputs = inputs
     except ValueError:
-        tuple_template.Inputs = [inputs]
-    tuple_template.Decay = decay
+        t.Inputs = [inputs]
+    t.Decay = decay
     # Merge the mother and daughter dictionaries
-    tuple_template.addBranches(dict(mothers.items() + daughters.items()))
+    t.addBranches(dict(mothers.items() + daughters.items()))
     # Tools for all branches
-    tuple_template.ToolList = tuple_tools
+    t.ToolList = tuple_tools
     # Verbose reconstruction information
-    tuple_template.addTupleTool("TupleToolRecoStats").Verbose = True
-    # TISTOS trigger information
-    tistos = tuple_template.addTupleTool("TupleToolTISTOS")
-    tistos.TriggerList = triggers
-    tistos.Verbose = True
+    t.addTupleTool("TupleToolRecoStats").Verbose = True
     # Extra information from LoKi
-    tuple_template.addTupleTool(
+    t.addTupleTool(
         "LoKi::Hybrid::TupleTool/basicLokiTT"
     ).Variables = basic_loki_vars
+    # For each mother branch, add the LoKi tuple tool that adds mother-specific
+    # vars
     for mother in mothers:
-        m = getattr(tuple_template, mother)
+        m = getattr(t, mother)
         m.addTupleTool(
             "LoKi::Hybrid::TupleTool/{0}LokiTT".format(mother)
         ).Variables = mother_loki_vars
@@ -114,7 +93,42 @@ def decay_tree_tuple(name, decay, mothers, daughters, inputs, mc=False):
             # BKGCAT
             m.addTupleTool("TupleToolMCBackgroundInfo")
 
-    return tuple_template
+    return t
+
+
+def lc2pxx_tuple(name, decay, mothers, daughters, inputs, mc=False):
+    """Return a DecayTreeTuple suitable for an Lc2pXX analysis.
+
+    See decay_tree_tuple for argument documentation.
+    This tuple tool adds the trigger lines and some Lambda_c+ daughter pair masses.
+    """
+    t = decay_tree_tuple(name, decay, mothers, daughters, inputs, mc)
+    muon_triggers = [
+        "L0MuonDecision",
+        "Hlt1TrackMuonDecision"
+    ]
+    lambdab_triggers = [
+        "Hlt2TopoMu2BodyBBDTDecision",
+        "Hlt2TopoMu3BodyBBDTDecision",
+        "Hlt2TopoMu4BodyBBDTDecision",
+        "Hlt2SingleMuonDecision"
+    ]
+    # TISTOS trigger information
+    lambdab_tt = t.Lambdab.addTupleTool("TupleToolTISTOS")
+    lambdab_tt.TriggerList = lambdab_triggers
+    lambdab_tt.Verbose = True
+    mu_tt = t.mu.addTupleTool("TupleToolTISTOS")
+    mu_tt.TriggerList = mu_triggers
+    mu_tt.Verbose = True
+    # Invariant mass for all Lambda_c+ daughter pairs
+    t.Lambdac.addTupleTool(
+        "LoKi::Hybrid::TupleTool/twoBodyMassesLokiTT"
+    ).Variables = {
+        "p_h1_M": "MASS(1, 2)"
+        "p_h2_M": "MASS(1, 3)"
+        "h1_h2_M": "MASS(2, 3)"
+    }
+    return t
 
 
 def mc_decay_tree_tuple(name, decay, mothers, daughters):
