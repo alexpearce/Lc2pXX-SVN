@@ -124,8 +124,8 @@ def lc2pxx_tuple(name, decay, mothers, daughters, inputs, mc=False):
     t.Lambdac.addTupleTool(
         "LoKi::Hybrid::TupleTool/twoBodyMassesLokiTT"
     ).Variables = {
-        "p_h1_M": "MASS(1, 2)"
-        "p_h2_M": "MASS(1, 3)"
+        "p_h1_M": "MASS(1, 2)",
+        "p_h2_M": "MASS(1, 3)",
         "h1_h2_M": "MASS(2, 3)"
     }
     return t
