@@ -118,7 +118,7 @@ def lc2pxx_tuple(name, decay, mothers, daughters, inputs, mc=False):
     lambdab_tt.TriggerList = lambdab_triggers
     lambdab_tt.Verbose = True
     mu_tt = t.mu.addTupleTool("TupleToolTISTOS")
-    mu_tt.TriggerList = mu_triggers
+    mu_tt.TriggerList = muon_triggers
     mu_tt.Verbose = True
     # Invariant mass for all Lambda_c+ daughter pairs
     t.Lambdac.addTupleTool(
