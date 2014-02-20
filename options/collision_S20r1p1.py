@@ -18,11 +18,11 @@ davinci.configure(2011, False)
 lines = {
     "LcTopKSLL": {
         "stripping": "b2MuXLc2pKsLLCharmFromBSemiLine",
-        "tracks": ("mu-")
+        "tracks": ("mu-",)
     },
     "LcTopKSDD": {
         "stripping": "b2MuXLc2pKsDDCharmFromBSemiLine",
-        "tracks": ("mu-")
+        "tracks": ("mu-",)
     }
 }
 
