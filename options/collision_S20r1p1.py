@@ -1,19 +1,13 @@
 """
-2011 collision DaVinci options file for creating ntuples for the decay chain
+DaVinci options file for creating data/collision ntuples for the decay chain
     [Lambda_b0 -> (Lambda_c+ -> p+ (KS0 -> pi- pi+)) mu-]CC
 Ntuples for both long-long (LL) and down-down (DD) KS are produced.
 DecayTreeFitter is run on the Lambda_b0, constraining the KS mass, as this
 improves the Lambda_c+ mass resolution.
 """
 from Configurables import DaVinci
-from DecayTreeTuple.Configuration import *
 
-from helpers import davinci, tuple_templates
-
-year = 2011
-mc = False
-
-davinci.configure(2011, False)
+from helpers import tuple_templates
 
 lines = {
     "LcTopKSLL": {
@@ -80,10 +74,9 @@ for line in lines:
         mothers,
         daughters,
         inputs_template.format(stripping),
-        mc
+        False
     )
     dtf = t.Lambdab.addTupleTool("LoKi::Hybrid::TupleTool/LoKiDTFTool")
     dtf.Variables = dtf_loki_vars
 
     DaVinci().UserAlgorithms.append(t)
-

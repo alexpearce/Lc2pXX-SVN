@@ -1,5 +1,5 @@
 """
-2011 collision DaVinci options file for creating ntuples for the decay chain
+DaVinci options file for creating data/collision ntuples for the decay chain
     [Lambda_b0 -> (Lambda_c+ -> f) mu-]CC
 where the Lambda_c+ decay mode f is one of
     p+ K- pi+
@@ -8,14 +8,8 @@ where the Lambda_c+ decay mode f is one of
 The first is Cabibbo-favoured, the others are singly Cabibbo-suppressed.
 """
 from Configurables import DaVinci
-from DecayTreeTuple.Configuration import *
 
-from helpers import davinci, tuple_templates
-
-year = 2011
-mc = False
-
-davinci.configure(2011, False)
+from helpers import tuple_templates
 
 lines = {
     "LcTopKpi": {
@@ -64,8 +58,7 @@ for line in lines:
         mothers,
         daughters,
         inputs_template.format(stripping),
-        mc
+        False
     )
 
     DaVinci().UserAlgorithms.append(t)
-
