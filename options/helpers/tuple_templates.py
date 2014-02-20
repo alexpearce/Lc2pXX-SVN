@@ -121,13 +121,32 @@ def lc2pxx_tuple(name, decay, mothers, daughters, inputs, mc=False):
     mu_tt.TriggerList = muon_triggers
     mu_tt.Verbose = True
     # Invariant mass for all Lambda_c+ daughter pairs
+    # The ordering used for th MASS functor is that defined in the stripping
+    # decay descriptor (DD), not the DecayTreeTuple one
+    # The pKpi stripping DD is defined K- p+ pi-, the others as p+ h- h+.
+    # The S20r1 descriptors can be found at http://cern.ch/go/q9gw
+    # For a discussion on this, see http://cern.ch/go/6dpg
+    if "pKpi" in name:
+        p, h1, h2 = (2, 1, 3)
+    else:
+        p, h1, h2 = (1, 2, 3)
+    # The variables aren't meaningful for pKS, so set them to zero
+    # Keep the branches to make generalising the ntuple structure simpler
+    if "pKS" in name:
+        mass_vars = {
+            "p_h1_M": "ZERO",
+            "p_h2_M": "ZERO",
+            "h1_h2_M": "ZERO"
+        }
+    else:
+        mass_vars = {
+            "p_h1_M": "MASS({0}, {1})".format(p, h1),
+            "p_h2_M": "MASS({0}, {1})".format(p, h2),
+            "h1_h2_M": "MASS({0}, {1})".format(h1, h2)
+        }
     t.Lambdac.addTupleTool(
         "LoKi::Hybrid::TupleTool/twoBodyMassesLokiTT"
-    ).Variables = {
-        "p_h1_M": "MASS(1, 2)",
-        "p_h2_M": "MASS(1, 3)",
-        "h1_h2_M": "MASS(2, 3)"
-    }
+    ).Variables = mass_vars
     return t
 
 
