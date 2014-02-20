@@ -42,11 +42,13 @@ daughters_templates = {
 
 # DecayTreeFitter variables to add
 dtf_particles = {
+    "Lambdab": "{}",
     "Lambdac": "CHILD({}, 1)",
-    "proton": "CHILD({}, 1, 1)",
-    "KS": "CHILD({}, 2, 1)",
-    "h1": "CHILD({}, 1, 2, 1)",
-    "h2": "CHILD({}, 2, 2, 1)",
+    "mu": "CHILD({}, 2)",
+    "proton": "CHILD(CHILD({}, 1), 1)",
+    "KS": "CHILD(CHILD({}, 2), 1)",
+    "h1": "CHILD(CHILD(CHILD({}, 1), 2), 1)",
+    "h2": "CHILD(CHILD(CHILD({}, 2), 2), 1)",
 }
 dtf_variables = ["ID", "M", "P", "E", "PT", "PX", "PY", "PZ"]
 dtf_loki_vars = {
