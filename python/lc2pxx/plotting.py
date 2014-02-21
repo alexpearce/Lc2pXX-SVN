@@ -63,7 +63,6 @@ def plot_variable(variable, data_stores):
     ROOT.TH1.SetDefaultSumw2(True)
 
     # Only matters what the aspect ratio is
-    # canvas = ROOT.TCanvas(variable.name, variable.title, 400, 400)
     canvas = ROOT.TCanvas(variable.name, variable.title, 400, 400)
     stack = ROOT.THStack("stack", variable.title)
     # Legend height as a function of entry numbers
