@@ -222,9 +222,6 @@ def create_metatree(ntuple):
     random = np.zeros(1)
     accepted = np.zeros(1, dtype=int)
     triggered = np.zeros(1, dtype=int)
-    p_h1_M = np.zeros(1)
-    p_h2_M = np.zeros(1)
-    h1_h2_M = np.zeros(1)
     proton_theta = np.zeros(1)
     proton_phi = np.zeros(1)
     cos_h1_h2_phi = np.zeros(1)
@@ -237,9 +234,6 @@ def create_metatree(ntuple):
     t.Branch("random", random, "random/D")
     t.Branch("accepted", accepted, "accepted/I")
     t.Branch("triggered", triggered, "triggered/I")
-    t.Branch("p_h1_M", p_h1_M, "p_h1_M/D")
-    t.Branch("p_h2_M", p_h2_M, "p_h2_M/D")
-    t.Branch("h1_h2_M", h1_h2_M, "h1_h2_M/D")
     t.Branch("proton_theta", proton_theta, "proton_theta/D")
     t.Branch("proton_phi", proton_phi, "proton_phi/D")
     t.Branch("cos_h1_h2_phi", cos_h1_h2_phi, "cos_h1_h2_phi/D")
@@ -255,7 +249,7 @@ def create_metatree(ntuple):
     )
     # Generate sWeights
     with ntuple.copy_selected(selection) as nt:
-        workspace = ROOT.RooWorkspace("sweights_workspace")
+        workspace = ROOT.RooWorkspace("sweights_{0}_workspace".format(nt))
         # Unbinned fit
         fitting.lambdac_mass.fit(
             nt, workspace, ntuple.shapes_preselection
@@ -346,11 +340,6 @@ def create_metatree(ntuple):
             ntuple.val("h2_PZ"),
             ntuple.val("h2_PE")
         )
-
-        # Daughter pair 2-body invariant masses
-        p_h1_M[0] = (proton_lab + h1_lab).M()
-        p_h2_M[0] = (proton_lab + h2_lab).M()
-        h1_h2_M[0] = (h1_lab + h2_lab).M()
 
         # What we do here is a little nifty
         # First, find the rotation needed to align the Lc flight direction

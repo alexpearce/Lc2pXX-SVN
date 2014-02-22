@@ -207,6 +207,9 @@ class Lc2pXX(Ntuple.Ntuple):
             "h2_PIDK",
             "h2_PIDe",
             "h2_PIDmu",
+            "Lambdac_p_h1_M",
+            "Lambdac_p_h2_M",
+            "Lambdac_h1_h2_M",
             "mu_L0MuonDecision_TOS",
             "mu_Hlt1TrackMuonDecision_TOS",
             "Lambdab_Hlt2TopoMu2BodyBBDTDecision_TOS",
@@ -227,10 +230,7 @@ class Lc2pXX(Ntuple.Ntuple):
                 "signal_sw",
                 "background_sw",
                 "accepted",
-                "triggered",
-                "h1_h2_M",
-                "p_h1_M",
-                "p_h2_M"
+                "triggered"
             ]
         self.activate_branches(branches)
 
@@ -370,7 +370,7 @@ class Lc2ppipi(Lc2pXX):
 
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
-        h1_h2_M = self.val("h1_h2_M")
+        h1_h2_M = self.val("Lambdac_h1_h2_M")
         # Require pi+pi- invariant mass outside KS window
         ks = h1_h2_M < 480. or h1_h2_M > 520.
         return ks
