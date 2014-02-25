@@ -46,7 +46,7 @@ class HistoVar:
             the instance represents.
         title -- Pretty version of name, assigned to HistoVar.title
         min -- Min range of variable assigned to HistoVar.min
-        max -- Min range of variable assigned to HistoVar.max
+        max -- Max range of variable assigned to HistoVar.max
         units -- String of the units of this variable (default: "")
         bins -- Number of bins to plot with (default: 20)
         """
