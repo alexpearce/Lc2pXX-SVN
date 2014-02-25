@@ -38,7 +38,7 @@ class DataStore:
 
 class HistoVar:
     """Container class for variable metadata for plotting."""
-    def __init__(self, name, title, min, max, units="", bins=0):
+    def __init__(self, name, title, min, max, units="", bins=20):
         """Initialise an instance of the HistoVar class.
 
         Keyword arguments:
@@ -47,13 +47,12 @@ class HistoVar:
         title -- Pretty version of name, assigned to HistoVar.title
         min -- Min range of variable assigned to HistoVar.min
         max -- Min range of variable assigned to HistoVar.max
-        units -- String of the units of this variable
-        bins -- Number of bins to plot with. If 0, object uses
-            config.num_bins
+        units -- String of the units of this variable (default: "")
+        bins -- Number of bins to plot with (default: 20)
         """
         self.name = name
         self.title = title
         self.min = min
         self.max = max
         self.units = units
-        self.bins = bins or config.num_bins
+        self.bins = bins

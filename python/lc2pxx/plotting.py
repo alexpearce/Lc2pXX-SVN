@@ -220,7 +220,7 @@ def plot_fit(workspace, pdfs, bins=70, pull=True):
     workspace.data("data").plotOn(
         frame,
         ROOT.RooFit.Name("theData"),
-        ROOT.RooFit.Binning(bins or config.num_bins),
+        ROOT.RooFit.Binning(bins),
         ROOT.RooFit.MarkerSize(0.5)
     )
     for idx, pdf in enumerate(pdfs[1:]):

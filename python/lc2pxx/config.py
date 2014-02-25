@@ -98,11 +98,6 @@ magdown = "MagDown"
 magboth = "Combined"
 polarities = (magup, magdown, magboth)
 
-# Default number of bins when plotting histograms
-# This should be used very sparingly; generally histograms should have
-# the number of bins carefully chosen
-num_bins = 50
-
 ntuple_name = "DVntuple"
 metatree_name = "MetaTree"
 
