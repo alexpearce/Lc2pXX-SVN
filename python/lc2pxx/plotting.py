@@ -82,19 +82,20 @@ def plot_variable(variable, data_stores):
         # not to create histograms with identical `name` attributes in the
         # global scope, so we generate random strings and assign these as
         # names
-        uniq = utilities.random_str()
+        histo_name = "h{0}".format(utilities.random_str())
+        # Create the histogram instance, then fill it with TTree::Draw
+        # This allows us to use variable-width bins, defined by
+        # variable.bins_array()
+        histo = ROOT.TH1F(
+            histo_name,
+            histo_name,
+            variable.bins,
+            variable.bins_array()
+        )
         data_store.Draw(
-            "{0}>>h{1}({2},{3},{4})".format(
-                variable.name,
-                uniq,
-                variable.bins,
-                variable.min,
-                variable.max
-            ),
+            "{0}>>{1}".format(variable.name, histo_name),
             data_store.cuts
         )
-
-        histo = ROOT.gDirectory.Get("h{0}".format(uniq))
         # We scale to 100 so the y-axis units look nicer
         histo.Scale(100. / histo.GetSumOfWeights())
         max = histo.GetMaximum()
@@ -160,18 +161,19 @@ def plot_variable_2d(variables, data_store):
     ), "{0} vs. {1}".format(
         x.title, y.title
     ), 400, 400)
-    uniq = utilities.random_str()
+    histo_name = "h{0}".format(utilities.random_str())
+    histo = ROOT.TH2F(
+        histo_name,
+        histo_name,
+        x.bins,
+        x.bins_array(),
+        y.bins,
+        y.bins_array()
+    )
     data_store.Draw(
-        "{0}:{1}>>h{2}({3},{4},{5},{6},{7},{8})".format(
-            # Yeah, it's flipped
-            y.name, x.name,
-            uniq,
-            x.bins, x.min, x.max,
-            y.bins, y.min, y.max
-        ),
+        "{0}:{1}>>{2}".format(y.name, x.name, histo_name),
         data_store.cuts
     )
-    histo = ROOT.gDirectory.Get("h{0}".format(uniq))
     # TODO styling goes here
     # The histo needs to be drawn to get access to the axes
     histo.Draw("colz")

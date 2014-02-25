@@ -4,6 +4,7 @@ Classes representing containers, holding something and some metadata.
 """
 
 import logging as log
+import array
 
 from lc2pxx import config
 
@@ -38,7 +39,7 @@ class DataStore:
 
 class HistoVar:
     """Container class for variable metadata for plotting."""
-    def __init__(self, name, title, min, max, units="", bins=20):
+    def __init__(self, name, title, min, max, units="", bins=20, binning=None):
         """Initialise an instance of the HistoVar class.
 
         Keyword arguments:
@@ -49,6 +50,9 @@ class HistoVar:
         max -- Max range of variable assigned to HistoVar.max
         units -- String of the units of this variable (default: "")
         bins -- Number of bins to plot with (default: 20)
+        binning -- An *array* of bin boundaries. If None (default), create a
+            fixed-width binning using min, max, and num_bins, assigned to
+            HistoVar.binning
         """
         self.name = name
         self.title = title
@@ -56,3 +60,23 @@ class HistoVar:
         self.max = max
         self.units = units
         self.bins = bins
+        self.binning = binning
+
+    def bins_array(self, t='f'):
+        """Return an array, of type t, defining the variable's bin boundaries.
+
+        The first boundary is self.min, the last is self.max.
+        If the user has not defined self.binning, create a fixed-width binning
+        of num_bins bins.
+        Keyword arguments:
+        t -- Type of the array (default: 'f', for floats). See
+            http://docs.python.org/2/library/array.html
+        """
+        binning = self.binning
+        if not binning:
+            step = (self.max - self.min)/(1.*self.bins)
+            boundaries = [self.min + i*step for i in range(self.bins)]
+            # We need to specify the upper edge of the last bin
+            boundaries += [self.max]
+            binning = array.array(t, boundaries)
+        return binning
