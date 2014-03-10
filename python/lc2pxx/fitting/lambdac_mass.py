@@ -107,7 +107,7 @@ def fit(ntuple, workspace, shapes, bins=0, weight=""):
 
     # Perform the fit, adding the RooFitResult to the workspace
     fit_result = workspace.pdf(consts["pdf_tot"]).fitTo(
-        workspace.data(data_name), ROOT.RooFit.Save(True)
+        workspace.data(data_name), ROOT.RooFit.NumCPU(2), ROOT.RooFit.Save(True)
     )
     workspace_import(fit_result, consts["fit_result"])
 
