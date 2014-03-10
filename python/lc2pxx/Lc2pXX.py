@@ -273,9 +273,9 @@ class Lc2pKpi(Lc2pXX):
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
         if config.use_probnn:
-            proton = self.val("proton_ProbNNp") > 0.5
-            h1 = self.val("h1_ProbNNk") > 0.5
-            h2 = self.val("h2_ProbNNpi") > 0.7
+            proton = self.val("proton_ProbNNp") > 0.45
+            h1 = self.val("h1_ProbNNk") > 0.45
+            h2 = self.val("h2_ProbNNpi") > 0.5
             pid = proton and h1 and h2
         else:
             proton_K = self.val("proton_PIDp") - self.val("proton_PIDK") > 9.
@@ -324,9 +324,9 @@ class Lc2pKK(Lc2pXX):
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
         if config.use_probnn:
-            proton = self.val("proton_ProbNNp") > 0.5
-            h1 = self.val("h1_ProbNNk") > 0.5
-            h2 = self.val("h2_ProbNNk") > 0.5
+            proton = self.val("proton_ProbNNp") > 0.45
+            h1 = self.val("h1_ProbNNk") > 0.45
+            h2 = self.val("h2_ProbNNk") > 0.45
             pid = proton and h1 and h2
         else:
             proton_K = self.val("proton_PIDp") - self.val("proton_PIDK") > 9.
@@ -378,9 +378,9 @@ class Lc2ppipi(Lc2pXX):
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
         if config.use_probnn:
-            proton = self.val("proton_ProbNNp") > 0.5
-            h1 = self.val("h1_ProbNNpi") > 0.7
-            h2 = self.val("h2_ProbNNpi") > 0.7
+            proton = self.val("proton_ProbNNp") > 0.45
+            h1 = self.val("h1_ProbNNpi") > 0.5
+            h2 = self.val("h2_ProbNNpi") > 0.5
             pid = proton and h1 and h2
         else:
             proton_K = self.val("proton_PIDp") - self.val("proton_PIDK") > 9.
