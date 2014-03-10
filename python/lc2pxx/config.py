@@ -106,7 +106,7 @@ years = (2011, 2012)
 # Stripping versions for a given year
 stripping_years = {
     2011: "20r1",
-    2012: "20"
+    2012: "20r0"
 }
 
 # If True, use ProbNN PID variables offline,
