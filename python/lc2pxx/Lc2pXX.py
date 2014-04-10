@@ -105,14 +105,10 @@ class Lc2pXX(Ntuple.Ntuple):
     #         preselection = "(0) && (cut<5)".format(Lc2pXX.preselection)
     # It is used in the creation of the meta friend tree.
     preselection = "&&".join([
-        "5e3 < proton_P && proton_P < 1e5",
+        "2e3 < proton_P && proton_P < 1e5",
         "2.0 < proton_ETA && proton_ETA < 4.5",
         "nTracks > 0",
-        "nTracks < 500",
-        "proton_P > 9.3e3",
-        "(proton_P > 15.6e3 || proton_ETA < 3.875)",
-        "(proton_P < 29.8e3 || proton_ETA > 2.625)",
-        "(proton_P < 51.4e3 || proton_ETA > 3.25)"
+        "nTracks < 500"
     ])
     def passes_preselection(self):
         """Return True if current event passes preselection cuts."""
@@ -125,14 +121,9 @@ class Lc2pXX(Ntuple.Ntuple):
         proton_ETA = self.val("proton_ETA")
         nTracks = self.val("nTracks")
         proton_veto = (
-            (5e3 < proton_P < 1e5) and
+            (2e3 < proton_P < 1e5) and
             (2.0 < proton_ETA < 4.5) and
-            (0 < nTracks < 500) and
-            # Vetoes due to lack of PID calibration data in these regions
-            (proton_P > 9.3e3) and
-            (proton_P > 15.6e3 or proton_ETA < 3.875) and
-            (proton_P < 29.8e3 or proton_ETA > 2.625) and
-            (proton_P < 51.4e3 or proton_ETA > 3.25)
+            (0 < nTracks < 500)
         )
         return (
             lc_mass and
@@ -299,9 +290,9 @@ class Lc2pKK(Lc2pXX):
     preselection = "({0}) && ({1})".format(
         Lc2pXX.preselection,
         "&&".join([
-            "5e3 < h1_P && h1_P < 1e5",
+            "2e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
-            "5e3 < h2_P && h2_P < 1e5",
+            "2e3 < h2_P && h2_P < 1e5",
             "2.0 < h2_ETA && h2_ETA < 4.5",
             "nTracks > 0",
             "nTracks < 500"
@@ -310,9 +301,9 @@ class Lc2pKK(Lc2pXX):
     def passes_specific_preselection(self):
         """Return True if current event passes mode-specific preselection.
         """
-        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = 2e3 < self.val("h1_P") < 1e5
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
-        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = 2e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
         nTracks = 0 < self.val("nTracks") < 500
         return h1_veto and h2_veto and nTracks
@@ -350,9 +341,9 @@ class Lc2ppipi(Lc2pXX):
     preselection = "({0}) && ({1})".format(
         Lc2pXX.preselection,
         "&&".join([
-            "5e3 < h1_P && h1_P < 1e5",
+            "2e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
-            "5e3 < h2_P && h2_P < 1e5",
+            "2e3 < h2_P && h2_P < 1e5",
             "2.0 < h2_ETA && h2_ETA < 4.5",
             "nTracks > 0",
             "nTracks < 500"
@@ -361,9 +352,9 @@ class Lc2ppipi(Lc2pXX):
     def passes_specific_preselection(self):
         """Return True if current event passes mode-specific preselection.
         """
-        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = 2e3 < self.val("h1_P") < 1e5
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
-        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = 2e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
         nTracks = 0 < self.val("nTracks") < 500
         return h1_veto and h2_veto and nTracks
@@ -372,7 +363,7 @@ class Lc2ppipi(Lc2pXX):
         """True if current event passes mode-specific selection criteria."""
         h1_h2_M = self.val("Lambdac_h1_h2_M")
         # Require pi+pi- invariant mass outside KS window
-        ks = h1_h2_M < 480. or h1_h2_M > 520.
+        ks = not (480. < h1_h2_M < 520.)
         return ks
 
     def passes_pid_cuts(self):
@@ -410,9 +401,9 @@ class Lc2pKSLL(Lc2pXX):
     preselection = "({0}) && ({1})".format(
         Lc2pXX.preselection,
         "&&".join([
-            "5e3 < h1_P && h1_P < 1e5",
+            "2e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
-            "5e3 < h2_P && h2_P < 1e5",
+            "2e3 < h2_P && h2_P < 1e5",
             "2.0 < h2_ETA && h2_ETA < 4.5",
             "nTracks > 0",
             "nTracks < 500"
@@ -421,9 +412,9 @@ class Lc2pKSLL(Lc2pXX):
     def passes_specific_preselection(self):
         """Return True if current event passes mode-specific preselection.
         """
-        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        h1_veto = 2e3 < self.val("h1_P") < 1e5
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
-        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = 2e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
         nTracks = 0 < self.val("nTracks") < 500
         fit_quality = self.val("Lambdab_DTF_CHI2") >= 0
@@ -457,22 +448,19 @@ class Lc2pKSDD(Lc2pXX):
     preselection = "({0}) && ({1})".format(
         Lc2pXX.preselection,
         "&&".join([
-            "5e3 < h1_P && h1_P < 1e5",
+            "2e3 < h1_P && h1_P < 1e5",
             "2.0 < h1_ETA && h1_ETA < 4.5",
-            "5e3 < h2_P && h2_P < 1e5",
+            "2e3 < h2_P && h2_P < 1e5",
             "2.0 < h2_ETA && h2_ETA < 4.5",
             "nTracks > 0",
             "nTracks < 500"
         ])
     )
     def passes_specific_preselection(self):
-        """Return True if current event passes mode-specific preselection.
-
-        To be implemented by child classes
-        """
-        h1_veto = 5e3 < self.val("h1_P") < 1e5
+        """Return True if current event passes mode-specific preselection."""
+        h1_veto = 2e3 < self.val("h1_P") < 1e5
         h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
-        h2_veto = 5e3 < self.val("h2_P") < 1e5
+        h2_veto = 2e3 < self.val("h2_P") < 1e5
         h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
         nTracks = 0 < self.val("nTracks") < 500
         fit_quality = self.val("Lambdab_DTF_CHI2") >= 0
@@ -499,3 +487,27 @@ class Lc2pphi(Lc2pKK):
         """Initialiser for a new TChain. See Lc2pXX.__init__"""
         log.info("Initialising Lc2pphi")
         super(Lc2pphi, self).__init__(name, polarity, year, mc)
+
+    preselection = "({0}) && ({1})".format(
+        Lc2pXX.preselection,
+        "&&".join([
+            "2e3 < h1_P && h1_P < 1e5",
+            "2.0 < h1_ETA && h1_ETA < 4.5",
+            "2e3 < h2_P && h2_P < 1e5",
+            "2.0 < h2_ETA && h2_ETA < 4.5",
+            "nTracks > 0",
+            "nTracks < 500",
+            "Lambdac_h1_h2_M > 1006.6",
+            "Lambdac_h1_h2_M < 1032.4"
+        ])
+    )
+    def passes_specific_preselection(self):
+        """Return True if current event passes mode-specific preselection."""
+        h1_veto = 2e3 < self.val("h1_P") < 1e5
+        h1_veto = h1_veto and 2.0 < self.val("h1_ETA") < 4.5
+        h2_veto = 2e3 < self.val("h2_P") < 1e5
+        h2_veto = h2_veto and 2.0 < self.val("h2_ETA") < 4.5
+        nTracks = 0 < self.val("nTracks") < 500
+        # 3 PDG phi widths around the nominal PDG phi mass
+        phi_veto = 1006.6 < self.val("Lambdac_h1_h2_M") < 1032.4
+        return h1_veto and h2_veto and nTracks and phi_veto
