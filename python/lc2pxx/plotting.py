@@ -13,7 +13,9 @@ def line_colour(index):
         ROOT.kBlue + 1,
         ROOT.kRed,
         ROOT.kMagenta,
-        ROOT.kOrange
+        ROOT.kOrange,
+        ROOT.kBlack,
+        ROOT.TColor.GetColorDark(ROOT.kGreen)
     ]
     return colours[index]
 
@@ -42,20 +44,22 @@ def fill_style(index):
     """Return a fill style for the index."""
     styles = [
         1001,
-        3554,
-        3003,
-        3545,
-        0
+        3345,
+        3354,
+        3315,
+        3002,
+        3003
     ]
     return styles[index]
 
 
-def plot_variable(variable, data_stores):
+def plot_variable(variable, data_stores, drawopt="e1"):
     """Return a TCanvas containing the variable plotted for each data_store.
 
     Keyword arguments:
     variable -- HistoVar instance for the variable to be plotted
     data_stores -- List of DataStore instances to be superimposed
+    drawopt -- Option to draw histograms, e.g. `hist` or `bar` (default: e1)
     """
     get_style().cd()
 
@@ -66,7 +70,7 @@ def plot_variable(variable, data_stores):
     canvas = ROOT.TCanvas(variable.name, variable.title, 400, 400)
     stack = ROOT.THStack("stack", variable.title)
     # Legend height as a function of entry numbers
-    legend = ROOT.TLegend(0.9, 0.9, 0.6, 0.9 - (0.1*len(data_stores)))
+    legend = ROOT.TLegend(0.9, 0.9, 0.6, 0.9 - (0.07*len(data_stores)))
     legend.SetName(utilities.random_str())
     # TODO this will be silly with proportional fonts
     # TStyle has no method for setting this globally: aaarrrrggggghhh
@@ -92,15 +96,14 @@ def plot_variable(variable, data_stores):
             variable.bins,
             variable.bins_array()
         )
+        histo.Sumw2(True)
         data_store.Draw(
             "{0}>>{1}".format(variable.name, histo_name),
             data_store.cuts
         )
         # We scale to 100 so the y-axis units look nicer
-        histo.Scale(100. / histo.GetSumOfWeights())
-        max = histo.GetMaximum()
-        if max > total_max:
-            total_max = max
+        histo.Scale(100. / histo.Integral())
+        total_max = max(total_max, histo.GetMaximum())
         histo.SetLineColor(line_colour(count))
         histo.SetFillColor(fill_colour(count))
         histo.SetFillStyle(fill_style(count))
@@ -127,12 +130,12 @@ def plot_variable(variable, data_stores):
         xaxis_title += " [{0}]".format(variable.units)
     stack.GetXaxis().SetTitle(xaxis_title)
     stack.GetYaxis().SetTitle("Arbitrary units")
-    stack.Draw("e1 nostack ")
+    stack.Draw("{0} nostack".format(drawopt))
     legend.Draw()
 
     # Adding properties to canvas means they won't get garbage collected
     # when canvas is returned
-    # Wierdly, the histograms aren't GC'd, even though the THStack docs
+    # Weirdly, the histograms aren't GC'd, even though the THStack docs
     # says that the stack doesn't own the histos it contains
     canvas.s = stack
     canvas.l = legend
