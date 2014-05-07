@@ -7,7 +7,8 @@ verbose, but I think it's worthwhile trade-off.
 """
 
 import os
-import platform
+
+from lc2pxx.utilities import file_exists
 
 # We include this here rather than in lc2pxx.utilities as it has
 # no use outside of this module
@@ -43,16 +44,15 @@ mc_cheated = "cheated"
 mc_stripped = "stripped"
 mc_types = (mc_generated, mc_cheated, mc_stripped)
 
-# TLatex strings
-# The #font[122]{-} string makes the minus sign a better length
-kp_latex = "K^{+}"
-km_latex = "K^{#font[122]{-}}"
-pip_latex = "#pi^{+}"
-pim_latex = "#pi^{#font[122]{-}}"
-ks_latex = "K_{S}^{0}"
-phi_latex = "#phi"
-proton_latex = "p"
-lambdac_latex = "#Lambda_{c}^{+}"
+# LaTeX strings
+kp_latex = r"K^{+}"
+km_latex = r"K^{-}"
+pip_latex = r"\pi^{+}"
+pim_latex = r"\pi^{-}"
+ks_latex = r"K_{S}^{0}"
+phi_latex = r"\phi"
+proton_latex = r"p"
+lambdac_latex = r"\Lambda_{c}^{+}"
 daughters = ("proton", "h1", "h2")
 daughters_latex = {
     pKpi: {
@@ -89,8 +89,12 @@ daughters_latex = {
 modes_latex = {}
 for mode in modes:
     ds = [daughters_latex[mode][d] for d in daughters]
-    modes_latex[mode] = "#font[12]{{{0}}}".format("".join(ds))
+    modes_latex[mode] = "${0}$".format("".join(ds))
 del daughters
+# Units
+mev = r"MeV"
+mevc = r"MeV/$c$"
+mevcsq = r"MeV/$c^{2}$"
 
 # Magnet polarities
 magup = "MagUp"
@@ -122,5 +126,4 @@ scratch_data_dir = _scratch_dir + "/Lc2pXX"
 project_dir = os.getcwd()
 output_dir = project_dir + "/output"
 
-_hostname = platform.node()
-use_scratch = _hostname.startswith(("pclbral05", "apvm"))
+use_scratch = file_exists(scratch_data_dir)
