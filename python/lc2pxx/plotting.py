@@ -142,6 +142,91 @@ def plot_variable(variable, data_stores, drawopt="e1"):
 
     return canvas
 
+def plot_variables(title, variables, data_store, drawopt=""):
+    """Compare 2 variables in the same data store, returning the canvas.
+
+    Keyword arguments:
+    title -- Title for the x-axis
+    variables -- List of HistoVar objects
+    data_store -- DataStore to use
+    drawopt -- Option to draw histograms, e.g. `hist` or `bar` (default: e1)
+    """
+    get_style().cd()
+
+    # If the datasets are weighted, this ensures proper error calculation
+    ROOT.TH1.SetDefaultSumw2(True)
+
+    # Only matters what the aspect ratio is
+    canvas_title = utilities.sanitise(title)
+    canvas = ROOT.TCanvas(canvas_title, canvas_title, 400, 400)
+    stack = ROOT.THStack("stack", "s")
+    # Legend height as a function of number of variables
+    legend = ROOT.TLegend(0.9, 0.9, 0.6, 0.9 - (0.07*len(variables)))
+    legend.SetName(utilities.random_str())
+    legend.SetTextSize(16)
+
+    histograms = []
+
+    # Used to find the tallest histogram
+    total_max = -1
+
+    for count, variable in enumerate(variables):
+        # Because this method may be called several times, we must make sure
+        # not to create histograms with identical `name` attributes in the
+        # global scope, so we generate random strings and assign these as
+        # names
+        histo_name = "h{0}".format(utilities.random_str())
+        # Create the histogram instance, then fill it with TTree::Draw
+        # This allows us to use variable-width bins, defined by
+        # variable.bins_array()
+        histo = ROOT.TH1F(
+            histo_name,
+            histo_name,
+            variable.bins,
+            variable.bins_array()
+        )
+        histo.Sumw2(True)
+        data_store.Draw(
+            "{0}>>{1}".format(variable.name, histo_name),
+            data_store.cuts
+        )
+        # We scale to 100 so the y-axis units look nicer
+        histo.Scale(100. / histo.Integral())
+        total_max = max(total_max, histo.GetMaximum())
+        histo.SetLineColor(line_colour(count))
+        histo.SetFillColor(fill_colour(count))
+        histo.SetFillStyle(fill_style(count))
+        histo.SetMarkerColor(line_colour(count))
+        histo.SetMarkerSize(0.5)
+        histo.SetMarkerStyle(20)
+
+        stack.Add(histo)
+        legend.AddEntry(histo, variable.title, "lep")
+        histograms.append(histo)
+
+    # count should be 1-indexed
+    count += 1
+
+    total_max *= 1.1
+    [h.SetMaximum(total_max) for h in histograms]
+
+    # The stack needs to be drawn to get access to the axes
+    stack.Draw()
+    axes_var = variables[0]
+    stack.GetXaxis().SetTitle(title)
+    stack.GetYaxis().SetTitle("Arbitrary units")
+    stack.Draw("{0} nostack".format(drawopt))
+    legend.Draw()
+
+    # Adding properties to canvas means they won't get garbage collected
+    # when canvas is returned
+    # Weirdly, the histograms aren't GC'd, even though the THStack docs
+    # says that the stack doesn't own the histos it contains
+    canvas.s = stack
+    canvas.l = legend
+
+    return canvas
+
 
 def plot_variable_2d(variables, data_store):
     """Return a TCanvas containing the variables plotted for the data_store.
