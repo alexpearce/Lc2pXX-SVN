@@ -10,7 +10,7 @@ from lc2pxx import config, utilities
 def line_colour(index):
     """Return a line colour for the index."""
     colours = [
-        ROOT.kBlue + 1,
+        ROOT.kBlue,
         ROOT.kRed,
         ROOT.kMagenta,
         ROOT.kOrange,
@@ -67,7 +67,8 @@ def plot_variable(variable, data_stores, drawopt="e1"):
     ROOT.TH1.SetDefaultSumw2(True)
 
     # Only matters what the aspect ratio is
-    canvas = ROOT.TCanvas(variable.name, variable.title, 400, 400)
+    canvas = ROOT.TCanvas(utilities.sanitise(variable.name),
+            variable.title, 400, 400)
     stack = ROOT.THStack("stack", variable.title)
     # Legend height as a function of entry numbers
     legend = ROOT.TLegend(0.9, 0.9, 0.6, 0.9 - (0.07*len(data_stores)))
@@ -92,7 +93,7 @@ def plot_variable(variable, data_stores, drawopt="e1"):
         # variable.bins_array()
         histo = ROOT.TH1F(
             histo_name,
-            histo_name,
+            '',
             variable.bins,
             variable.bins_array()
         )
@@ -142,7 +143,7 @@ def plot_variable(variable, data_stores, drawopt="e1"):
 
     return canvas
 
-def plot_variables(title, variables, data_store, drawopt=""):
+def plot_variables(title, variables, data_store, drawopt="", units=""):
     """Compare 2 variables in the same data store, returning the canvas.
 
     Keyword arguments:
@@ -150,6 +151,7 @@ def plot_variables(title, variables, data_store, drawopt=""):
     variables -- List of HistoVar objects
     data_store -- DataStore to use
     drawopt -- Option to draw histograms, e.g. `hist` or `bar` (default: e1)
+    units -- Units to display on the x-axis (default: "")
     """
     get_style().cd()
 
@@ -158,8 +160,9 @@ def plot_variables(title, variables, data_store, drawopt=""):
 
     # Only matters what the aspect ratio is
     canvas_title = utilities.sanitise(title)
-    canvas = ROOT.TCanvas(canvas_title, canvas_title, 400, 400)
-    stack = ROOT.THStack("stack", "s")
+    canvas = ROOT.TCanvas(utilities.sanitise(canvas_title), canvas_title,
+            400, 400)
+    stack = ROOT.THStack("stack", "")
     # Legend height as a function of number of variables
     legend = ROOT.TLegend(0.9, 0.9, 0.6, 0.9 - (0.07*len(variables)))
     legend.SetName(utilities.random_str())
@@ -181,7 +184,7 @@ def plot_variables(title, variables, data_store, drawopt=""):
         # variable.bins_array()
         histo = ROOT.TH1F(
             histo_name,
-            histo_name,
+            '',
             variable.bins,
             variable.bins_array()
         )
@@ -213,6 +216,8 @@ def plot_variables(title, variables, data_store, drawopt=""):
     # The stack needs to be drawn to get access to the axes
     stack.Draw()
     axes_var = variables[0]
+    if units:
+        title += " [{0}]".format(units)
     stack.GetXaxis().SetTitle(title)
     stack.GetYaxis().SetTitle("Arbitrary units")
     stack.Draw("{0} nostack".format(drawopt))
@@ -241,18 +246,18 @@ def plot_variable_2d(variables, data_store):
     ROOT.TH1.SetDefaultSumw2(True)
     ROOT.TGaxis.SetMaxDigits(3)
 
-    x = variables[0]
-    y = variables[1]
+    x, y = variables
+
     # Only matters what the aspect ratio is
-    canvas = ROOT.TCanvas("{0}v{1}".format(
+    canvas = ROOT.TCanvas(utilities.sanitise("{0}v{1}".format(
         x.name, y.name
-    ), "{0} vs. {1}".format(
+    )), "{0} vs. {1}".format(
         x.title, y.title
     ), 400, 400)
     histo_name = "h{0}".format(utilities.random_str())
     histo = ROOT.TH2F(
         histo_name,
-        histo_name,
+        '',
         x.bins,
         x.bins_array(),
         y.bins,
@@ -274,6 +279,68 @@ def plot_variable_2d(variables, data_store):
         yaxis_title += " [{0}]".format(y.units)
     histo.GetXaxis().SetTitle(xaxis_title)
     histo.GetYaxis().SetTitle(yaxis_title)
+    histo.Draw("colz")
+    canvas.Update()
+
+    # Adding properties to canvas means they won't get garbage collected
+    # when canvas is returned
+    canvas.h = histo
+
+    return canvas
+
+
+def plot_variable_3d(variables, data_store):
+    """Return a TCanvas containing the variables plotted for the data_store.
+
+    Keyword arguments:
+    variables -- 3-tuple of HistoVars to be plotted as (x, y, z)
+    data_store -- DataStore instance to plot from
+    """
+    get_style().cd()
+
+    # If the datasets are weighted, this ensures proper error calculation
+    ROOT.TH1.SetDefaultSumw2(True)
+    ROOT.TGaxis.SetMaxDigits(3)
+
+    x, y, z = variables
+
+    # Only matters what the aspect ratio is
+    canvas = ROOT.TCanvas(utilities.sanitise("{0}v{1}v{2}".format(
+        x.name, y.name, z.name
+    )), "{0} vs. {1} vs. {2}".format(
+        x.title, y.title, z.title
+    ), 400, 400)
+    histo_name = "h{0}".format(utilities.random_str())
+    histo = ROOT.TH3F(
+        histo_name,
+        '',
+        x.bins,
+        x.bins_array(),
+        y.bins,
+        y.bins_array(),
+        z.bins,
+        z.bins_array()
+    )
+    data_store.Draw(
+        "{0}:{1}:{2}>>{3}".format(z.name, y.name, x.name, histo_name),
+        data_store.cuts
+    )
+    # TODO styling goes here
+    # The histo needs to be drawn to get access to the axes
+    histo.Draw("colz")
+    canvas.SetRightMargin(0.13)
+    xaxis_title = x.title
+    yaxis_title = y.title
+    zaxis_title = z.title
+    if x.units:
+        xaxis_title += " [{0}]".format(x.units)
+    if y.units:
+        yaxis_title += " [{0}]".format(y.units)
+    if z.units:
+        zaxis_title += " [{0}]".format(z.units)
+    histo.GetXaxis().SetTitle(xaxis_title)
+    histo.GetYaxis().SetTitle(yaxis_title)
+    histo.GetZaxis().SetTitle(zaxis_title)
     histo.Draw("colz")
     canvas.Update()
 
@@ -342,7 +409,7 @@ def plot_fit(workspace, pdfs, bins=70, pull=True):
     # Create a canvas of two pads, drawing the distribution and fit(s)
     # on a larger canvas above the pull plot
     c_name = "canvas_{0}".format(utilities.random_str())
-    canvas = ROOT.TCanvas(c_name, c_name, 400, 500)
+    canvas = ROOT.TCanvas(utilities.sanitise(c_name), c_name, 400, 500)
     if pull:
         # The pull plot is the difference between the total PDF and the
         # data, divided by the the error on that difference.
@@ -396,6 +463,63 @@ def plot_fit(workspace, pdfs, bins=70, pull=True):
 
     canvas.l = legend
 
+    return canvas
+
+
+def add_stack_pull(canvas, stack, ks=True):
+    """Add a pull plot to canvas, as the error-normalised difference between
+    the first two histograms in the stack.
+
+    The p-value of a Kolomogorov-Smirnov test is also added to the canvas,
+    if ks is True.
+    If any object other than the stack is on the canvas, it will be removed.
+    The canvas is returned.
+    Keyword arguments:
+    canvas -- Canvas to append the pull plot to containing the stack
+    stack -- THStack instance to retrieve first two histograms from
+    ks -- Add p-value of KS test to the canvas (default: True)
+    """
+    # Method execution freezes if this line isn't here
+    # I have absolutely no idea why
+    ROOT.SetOwnership(stack, False)
+    h1, h2 = stack.GetHists()[0:2]
+    # Ratio histogram
+    ratio_h = h1.Clone("ratio_{0}".format(h1.GetName()))
+    ratio_h.GetXaxis().SetTitle(stack.GetXaxis().GetTitle())
+    ratio_h.GetYaxis().SetTitle("Ratio")
+    ratio_h.Reset()
+    ratio_h.Sumw2(True)
+    ratio_h.Divide(h1, h2)
+    ratio_h.SetMinimum(0.5)
+    ratio_h.SetMaximum(1.5)
+    # Unity line
+    unity = ROOT.TF1("unity", "1", 0, 1e9)
+    unity.SetLineColor(ROOT.kRed)
+    # Draw objects on the canvas, making it a little taller
+    canvas.Clear()
+    canvas.SetCanvasSize(canvas.GetWw(), int(1.25*canvas.GetWh()))
+    canvas.Divide(1, 2)
+    canvas.cd(1)
+    ROOT.gPad.SetPad(0, 0.3, 1, 1)
+    stack.Draw("e1 nostack")
+    # Draw a legend, if present
+    if canvas.l:
+        canvas.l.Draw()
+    if ks:
+        p_value = h1.KolmogorovTest(h2)
+        pave = ROOT.TPaveText(0.65, 0.6, 0.9, 0.7, "ndc")
+        pave.SetBorderSize(0)
+        text = pave.AddText("KS p-value: {0:.5f}".format(p_value))
+        text.SetTextSize(12)
+        pave.Draw()
+    canvas.cd(2)
+    ROOT.gPad.SetPad(0, 0, 1, 0.3)
+    ratio_h.Draw()
+    unity.Draw("lsame")
+    # Add drawn objects as canvas object members to prevent garbage collection
+    canvas.p = pave
+    canvas.ratio_h = ratio_h
+    canvas.ratio_h_line = unity
     return canvas
 
 
