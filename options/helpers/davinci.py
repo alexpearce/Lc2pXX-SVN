@@ -18,11 +18,10 @@ def configure(year, mc):
     dv.SkipEvents = 0
     dv.DataType = str(year)
     dv.Simulation = mc
-    # Collision streams for Charm are on microDST, and there's no luminosity
-    # in MC
+    # Collision streams for Charm are on microDST, and  in MC
     if not mc:
         dv.InputType = "MDST"
         # See "Question about microDST and RootInTES" in lhcb-davinci
         dv.RootInTES = "/Event/Charm"
-        # Add a GetIntegratedLuminosity/LumiTuple TTree to output
-        dv.Lumi = True
+    # Add a GetIntegratedLuminosity/LumiTuple TTree to output, but not in MC
+    dv.Lumi = not mc

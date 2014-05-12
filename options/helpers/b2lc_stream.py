@@ -1,10 +1,7 @@
 from Configurables import StrippingReport, AlgorithmCorrelationsAlg
 from StrippingConf.Configuration import StrippingConf, StrippingStream
 
-from lc2pxx.booking.StrippingCharmFromBSemi import (
-    CharmFromBSemiAllLinesConf,
-    confdict
-)
+from StrippingCharmFromBSemi import CharmFromBSemiAllLinesConf, confdict
 
 def stripping_sequence_nopids():
     """Return a list of sequences to run and monitor NoPIDs stripping.

@@ -164,18 +164,15 @@ def mc_decay_tree_tuple(name, decay, mothers, daughters):
         products of mother decays which are not themselves mothers
     branches -- Dictionary of branches to store in the ntuple
     """
-    tuple = MCDecayTreeTuple(name)
-    tuple.Decay = decay
-    tuple.Branches = dict(mothers.items() + daughters.items())
-    tuple.ToolList += [
+    t = MCDecayTreeTuple(name)
+    t.Decay = decay
+    t.Branches = dict(mothers.items() + daughters.items())
+    t.ToolList += [
         "MCTupleToolPID",
         "MCTupleToolKinematic",
         "MCTupleToolReconstructed",
         "MCTupleToolHierarchy",
-        # Generation TT causes null event pointer failure
-        # "TupleToolGeneration",
         "TupleToolEventInfo",
         "TupleToolPrimaries"
     ]
-
-    return tuple
+    return t
