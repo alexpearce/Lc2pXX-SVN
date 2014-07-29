@@ -364,9 +364,12 @@ class Lc2ppipi(Lc2pXX):
     def passes_specific_offline_cuts(self):
         """True if current event passes mode-specific selection criteria."""
         h1_h2_M = self.val("Lambdac_h1_h2_M")
+        p_h1_M = self.val("Lambdac_p_h1_M")
         # Require pi+pi- invariant mass outside KS window
         ks = not (480. < h1_h2_M < 520.)
-        return ks
+        # Require proton-pi- invariant mass outside the Lambda0 window
+        lambdaz = not (1110 < p_h1_M < 1120)
+        return (ks and lambdaz)
 
     def passes_pid_cuts(self):
         """True if current event passes mode-specific PID criteria."""
